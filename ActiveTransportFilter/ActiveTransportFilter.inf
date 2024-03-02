@@ -1,0 +1,77 @@
+;
+; ActiveTransportFilter.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=System ; TODO: specify appropriate Class
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318} ; TODO: specify appropriate ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=ActiveTransportFilter.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+PnpLockdown=1
+
+[DestinationDirs]
+DefaultDestDir = 12
+ActiveTransportFilter_Device_CoInstaller_CopyFiles = 11
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+ActiveTransportFilter.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%ActiveTransportFilter.DeviceDesc%=ActiveTransportFilter_Device, Root\ActiveTransportFilter ; TODO: edit hw-id
+
+[ActiveTransportFilter_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+ActiveTransportFilter.sys
+
+;-------------- Service installation
+[ActiveTransportFilter_Device.NT.Services]
+AddService = ActiveTransportFilter,%SPSVCINST_ASSOCSERVICE%, ActiveTransportFilter_Service_Inst
+
+; -------------- ActiveTransportFilter driver install sections
+[ActiveTransportFilter_Service_Inst]
+DisplayName    = %ActiveTransportFilter.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\ActiveTransportFilter.sys
+
+;
+;--- ActiveTransportFilter_Device Coinstaller installation ------
+;
+
+[ActiveTransportFilter_Device.NT.CoInstallers]
+AddReg=ActiveTransportFilter_Device_CoInstaller_AddReg
+CopyFiles=ActiveTransportFilter_Device_CoInstaller_CopyFiles
+
+[ActiveTransportFilter_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[ActiveTransportFilter_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[ActiveTransportFilter_Device.NT.Wdf]
+KmdfService =  ActiveTransportFilter, ActiveTransportFilter_wdfsect
+[ActiveTransportFilter_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+DiskName = "ActiveTransportFilter Installation Disk"
+ActiveTransportFilter.DeviceDesc = "ActiveTransportFilter Device"
+ActiveTransportFilter.SVCDESC = "ActiveTransportFilter Service"
