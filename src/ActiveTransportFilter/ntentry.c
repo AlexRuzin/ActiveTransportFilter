@@ -3,7 +3,7 @@
 #include <initguid.h>
 
 #include "trace.h"
-#include "common.h"
+#include "../common/common.h"
 
 #pragma warning(push)
 #pragma warning(disable : 4100) // Disable unreferenced parameter bs
