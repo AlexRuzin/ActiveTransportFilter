@@ -3,6 +3,10 @@
 #ifndef __ATF_USER_LOGGING__
 #define __ATF_USER_LOGGING__
 
+#if defined(_WIN32)
+#include <Windows.h>
+#endif //_WIN32
+
 #include <string>
 #include <iostream>
 #include <chrono>
@@ -11,12 +15,27 @@
 #include <mutex>
 
 class Logger;
+
+//
+// Log on the default log source
+//
 #define LOG_DEBUG(x) Logger::GetInstance()->Log(x)
+
+//
+// Input: moduleName is the name of the executable, dll, whichever
+// Input: logType indicates where to log
+//
 #define LOG_INIT(modName, logType) Logger::Initialize(modName, logType)
 
 //
 // This Logger class can be implemented header only, all instances are static and global for ease and comfort or something
 //
+// TODO: Implement an interface
+//
+
+static Logger *currentInstance;
+static std::mutex logSync;
+
 class Logger {
 public:
     typedef enum _logging_type {
@@ -27,9 +46,6 @@ public:
     } LOGGING_TYPE;
 
 private:
-    static Logger *currentInstance;
-    static std::mutex logSync;
-
     const std::string moduleName;
     const std::string loggingFile;
     const LOGGING_TYPE loggingType;
@@ -77,19 +93,22 @@ private:
     {
         switch (type) {
         case _logging_type_windows_debug:
-        {
+        
 #if defined (_WIN32)       
-            OutputDebugStringA(Logger::GenerateOutputString(s).c_str());
+            OutputDebugStringA(GenerateOutputString(s).c_str());
 #endif //_WIN32
-        }
-        break;
+        
+            break;
 
         case _logging_type_file:
-
+            break;
         case _logging_type_console:
             std::cout << "[" << moduleName << "] " << s << std::endl;
             break;
         case _logging_type_all:
+            break;
+        default:
+            break;
         }
     }
 
@@ -98,12 +117,12 @@ public:
     {
         std::lock_guard<std::mutex> lock(logSync);
 
-        if (!Logger::currentInstance) {
-            Logger::currentInstance = new Logger(moduleName, loggingType);
+        if (!currentInstance) {
+            currentInstance = new Logger(moduleName, loggingType);
         }
     }
 
-    static Logger *GetInstance(void) 
+    static inline Logger *GetInstance(void) 
     {
         return currentInstance;
     }
@@ -111,30 +130,30 @@ public:
     static Logger DestroyLogger(void)
     {
         std::lock_guard<std::mutex> lock(logSync);
-        if (Logger::currentInstance) {
-            delete Logger::currentInstance;
-            Logger::currentInstance = nullptr;
+        if (currentInstance) {
+            delete currentInstance;
+            currentInstance = nullptr;
         }
     }
 
-    static void Log(enum _logging_type type, const std::string &s)
+    static inline void Log(enum _logging_type type, const std::string &s)
     {
         std::lock_guard<std::mutex> lock(logSync);
-        if (!Logger::currentInstance) {
+        if (!currentInstance) {
             return;
         }
 
-        Logger::currentInstance->LogInst(type, s);
+        currentInstance->LogInst(type, s);
     }
 
-    static void Log(const std::string &s)
+    static inline void Log(const std::string &s)
     {
         std::lock_guard<std::mutex> lock(logSync);
-        if (!Logger::currentInstance) {
+        if (!currentInstance) {
             return;
         }
 
-        Logger::currentInstance->LogInst(currentInstance->loggingType, s);
+        currentInstance->LogInst(currentInstance->loggingType, s);
     }
 };
 
