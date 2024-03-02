@@ -10,4 +10,9 @@
 
 #define SDDL_STRING             L"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
 
+//
+// DriverController
+//
+#define DRIVER_CTL_NAME         "DriverController"
+
 #endif //__ATF_COMMON__
