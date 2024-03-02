@@ -14,12 +14,20 @@
 #include <iomanip>
 #include <mutex>
 
+//
+// Examples:
+//  LOG_DEBUG("Starting");
+//  Logger::GetInstance() << "test" << abc;
+//  LOG_PRINTF("Test %s", "asdfasdf");
+//
+
 class Logger;
 
 //
 // Log on the default log source
 //
-#define LOG_DEBUG(x) Logger::GetInstance()->Log(x)
+#define LOG_DEBUG(x) Logger::GetInstance().Log(x)
+#define LOG_PRINTF(format, ...) Logger::GetInstance().Log(format, ##__VA_ARGS__)
 
 //
 // Input: moduleName is the name of the executable, dll, whichever
@@ -84,7 +92,7 @@ private:
         localtime_s(&now_tm, &now_c);
 
         std::stringstream ss;
-        ss << "[" << std::put_time(&now_tm, "%Y-%m-%d %H:%M:%S") << "] [" << moduleName << "] " << s;
+        ss << "[" << std::put_time(&now_tm, "%Y-%m-%d %H:%M:%S") << "] [" << moduleName << "] " << s << std::endl;
 
         return ss.str();
     }
@@ -112,6 +120,19 @@ private:
         }
     }
 
+    // TODO -- fix this crap
+    template<typename... Args>
+    std::string formatString(const std::string& format, Args... args) {
+        const int size_s = std::snprintf(nullptr, 0, format.c_str(), args...) + 1; // Extra space for '\0'
+        if (size_s <= 0) { 
+            return "";
+        }
+        auto size = static_cast<size_t>(size_s);
+        auto buf = std::make_unique<char[]>(size);
+        std::snprintf(buf.get(), size, format.c_str(), args...);
+        return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
+    }
+
 public:
     static void Initialize(const std::string &moduleName, enum _logging_type loggingType)
     {
@@ -122,9 +143,9 @@ public:
         }
     }
 
-    static inline Logger *GetInstance(void) 
+    static inline Logger &GetInstance(void)
     {
-        return currentInstance;
+        return *currentInstance;
     }
 
     static Logger DestroyLogger(void)
@@ -136,6 +157,14 @@ public:
         }
     }
 
+    template<typename T>
+    Logger &operator<<(const T &s) {
+        std::ostringstream os;
+        os << s;
+        Log(os.str());
+        return *this;
+    }
+
     static inline void Log(enum _logging_type type, const std::string &s)
     {
         std::lock_guard<std::mutex> lock(logSync);
@@ -144,6 +173,12 @@ public:
         }
 
         currentInstance->LogInst(type, s);
+    }
+
+    template<typename... Args>
+    void Log(const std::string& format, Args... args) {
+        std::string formattedMessage = formatString(format, args...);
+        Log(formattedMessage);
     }
 
     static inline void Log(const std::string &s)
