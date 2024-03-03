@@ -3,8 +3,9 @@
 #ifndef __ATF_COMMON__
 #define __ATF_COMMON__
 
-#include "ntstatus.h"
-
+//
+// ActiveTransportFilter Driver
+//
 #define ATF_DEVICE_NAME                     L"\\Device\\atf_filter"
 #define ATF_DOS_DEVICE_NAME                 L"\\DosDevices\\atf_filter"
 

@@ -1,6 +1,6 @@
 #include <Windows.h>
 
-#include <stdint.h>
+//#include <stdint.h>
 
 #include "service.h"
 #include "../common/user_logging.h"
@@ -38,10 +38,10 @@ int32_t main(int32_t argc, char argv[])
         return -1;
     }
 
-    LOG("Successfully opened service: %s", driverService.nameToDisplay);
+    LOG_INFO("Successfully opened service: %s", driverService.nameToDisplay);
 
 
-    LOG("%s completed operations, closing.", DRIVER_CTL_NAME);
+    LOG_INFO("%s completed operations, closing.", DRIVER_CTL_NAME);
     CloseScmHandle(driverServiceHandle);
     CloseScmHandle(scmHandle);
 
