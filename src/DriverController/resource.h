@@ -16,13 +16,16 @@
 #endif
 
 //
-// Driver binary
+// Driver Binary (sys)
 //
+#define ID_DRIVER_BIN_SYS               201
 
 //
 // Service Binary
 //
+#define ID_SERVICE_CONFIG_SERVICE_BIN   202
 
 //
+// Interface/Console Binary
 //
-//
+#define ID_USER_INTERFACE_CONSOLE_BIN   203
