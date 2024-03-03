@@ -2,8 +2,20 @@
 // Microsoft Visual C++ generated include file.
 // Used by DriverController.rc
 //
-#define IDR_RCDATA1                     101
-#define IDR_RCDATA2                     102
+//
+// Driver Binary (sys)
+//
+#define ID_DRIVER_BIN_SYS               101
+
+//
+// Service Binary
+//
+#define ID_CONFIG_SERVICE_BIN           102
+
+//
+// Interface/Console Binary
+//
+#define ID_USER_INTERFACE_CONSOLE_BIN   103
 
 // Next default values for new objects
 // 

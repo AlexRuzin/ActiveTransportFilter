@@ -41,4 +41,9 @@
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="rcdata1.bin">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

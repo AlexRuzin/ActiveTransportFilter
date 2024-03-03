@@ -5,6 +5,7 @@
 #include "../common/user_logging.h"
 
 #include <string>
+#include <fstream>
 
 int32_t GetTemporaryFilePath(std::string &out)
 {
@@ -21,33 +22,48 @@ int32_t GetTemporaryFilePath(std::string &out)
     return 0;
 }
 
-int32_t ExtractResourceToPath(int resourceId, const std::string &resourceName, const std::string &absPath)
+int32_t ExtractResourceToPath(int resourceId, const std::string &absPath)
 {
-    HRSRC hResource = FindResourceA(
-        GetModuleHandleA(NULL), 
+    HMODULE modHandle = GetModuleHandleA(NULL);
+
+    HRSRC resHandle = FindResourceA(
+        modHandle,
         MAKEINTRESOURCEA(resourceId),
-        MAKEINTRESOURCEA(RT_RCDATA)
+        RT_RCDATA
+
     );
+    if (!resHandle) {
+        LOG_ERROR("Error FindResourceA: 0x%08x", GetLastError());
+        return -1;
+    }
+
+    HGLOBAL memHandle = LoadResource(modHandle, resHandle);
+    if (!memHandle) {
+        LOG_ERROR("Error LoadResource: 0x%08x", GetLastError());
+        return -1;
+    }
+
+    const DWORD resourceSize = SizeofResource(modHandle, resHandle);
+    if (resourceSize == 0) {
+        LOG_ERROR("Error: resource %s size is %d", absPath, resourceSize);
+        return -1;
+    }
+
+    void *data = LockResource(memHandle);
+    if (!data) {
+        LOG_ERROR("Error LockResource returned NULL for " + absPath);
+        return -1;
+    }
+
+    std::ofstream outFile(absPath, std::ios::binary);
+    if (!outFile.is_open()) {
+        LOG_ERROR("Failed to open file: " + absPath);
+        return -1;
+    }
+
+    outFile.write(reinterpret_cast<const char *>(data), resourceSize);
+    outFile.close();
 
     return 0;
-}
-
-BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCSTR lpszType, LPSTR lpszName, LONG_PTR lParam) {
-    if (IS_INTRESOURCE(lpszName)) {
-        printf("Resource ID: %hu\n", (USHORT)lpszName);
-    } else {
-        wprintf(L"Resource Name: %ls\n", lpszName);
-    }
-    return TRUE; // Continue enumeration
-}
-
-void enumResource(void)
-{
-    HMODULE hModule = GetModuleHandle(NULL);
-    if (!EnumResourceNamesA(hModule, RT_RCDATA, EnumResNameProc, 0)) {
-        printf("Error enumerating resources: %lu\n", GetLastError());
-    }
-    Sleep(INFINITE);
-    return;
 }
 

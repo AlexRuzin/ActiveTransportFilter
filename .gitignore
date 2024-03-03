@@ -3,6 +3,9 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
 
+# Temporary testing directory
+src/DriverController/atf_bin_directory/
+
 # User-specific files
 *.rsuser
 *.suo

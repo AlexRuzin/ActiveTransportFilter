@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <stdint.h>
+#include <map>
 
 #include "resource.h"
 #include "service.h"
@@ -21,6 +22,11 @@ int32_t doWriteExecutables(void);
 // 
 int32_t doServiceStartup(void);
 
+//
+// Cleanup of the installer directory (MAIN_INSTALL_PATH) (see common.h)
+//
+int32_t cleanInstallDirectory(std::string &path);
+
 
 //
 // Entry point
@@ -33,19 +39,34 @@ int32_t main(int32_t argc, char argv[])
 
     int32_t res = -1;
 
+    //
     // Unpack the driver and service
+    //
     res = doWriteExecutables();
     if (res) {
         LOG_ERROR("Failed to write executables: 0x%08x", res);
         return res;
     }
 
+    //
     // Startup the driver and service
+    //
     res = doServiceStartup();
     if (res) {
         LOG_ERROR("Failed to startup services: 0x%08x", res);
         return res;
     }
+
+    return 0;
+}
+
+int32_t cleanInstallDirectory(std::string &path)
+{
+    LOG_INFO("Deleting temp directory: " + path);
+    RemoveDirectoryA(path.c_str());
+
+    LOG_INFO("Creating temp directory: " + path);
+    CreateDirectoryA(path.c_str(), NULL);
 
     return 0;
 }
@@ -61,15 +82,26 @@ int32_t doWriteExecutables(void)
 
     LOG_INFO("Temporary path: " + tempPath);
 
-    enumResource();
+    // Cleanup the temp directory (install directory)
+    cleanInstallDirectory(tempPath);   
 
-    HRSRC hResource = FindResourceA(
-        GetModuleHandleA(NULL),
-        RT_RCDATA,
-        MAKEINTRESOURCEA(ID_DRIVER_BIN_SYS)
-    );
-    if (hResource == NULL) {
-        LOG_ERROR("Error: 0x%08x", GetLastError());
+    // Contains resources and their paths
+    static const std::map<int, std::string> resPaths = {
+        { ID_DRIVER_BIN_SYS, FILENAME_ATF_DRIVER },
+        { ID_CONFIG_SERVICE_BIN, FILENAME_DEVICE_CONFIG_SERVICE },
+        { ID_USER_INTERFACE_CONSOLE_BIN, FILENAME_INTERFACE_CONSOLE }
+    };
+
+    for (std::map<int, std::string>::const_iterator i = resPaths.begin(); i != resPaths.end(); i++) {
+        const std::string path = tempPath + "\\" + i->second;
+
+        LOG_INFO("Extracting file: %s (id: 0x%08x)", i->second, path);
+
+        res = ExtractResourceToPath(i->first, path);
+        if (res) {
+            LOG_ERROR("Failed to extract id: %d, path: %s", i->first, i->second);
+            return res;
+        }
     }
 
     return 0;

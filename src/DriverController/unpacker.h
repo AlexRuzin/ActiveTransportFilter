@@ -6,8 +6,6 @@
 
 #include <string>
 
-void enumResource(void);
-
 //
 // Get the install path
 //
@@ -16,4 +14,4 @@ int32_t GetTemporaryFilePath(std::string &out);
 //
 // Extract resource to target path
 //
-int32_t ExtractResourceToPath(int resourceId, const std::string &resourceName, const std::string &absPath);
+int32_t ExtractResourceToPath(int resourceId, const std::string &absPath);
