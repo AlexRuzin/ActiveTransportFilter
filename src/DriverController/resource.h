@@ -15,6 +15,16 @@
 #endif
 #endif
 
+#if defined(_DEBUG) && defined(_M_X64)
+#pragma message("MODE: DEBUG (x64)")
+#define DRIVER_PATH                     "..\\..\\build\\x64\\Debug\\_driver\\ActiveTransportFilter.sys"
+#elif !defined(_DEBUG) && defined(_M_X64) //!_DEBUG && _M_X64
+#define DRIVER_PATH                     "..\\..\\build\\x64\\Release\\_driver\\ActiveTransportFilter.sys"
+#else // Build not supported (x86)
+#pragma message("MODE not supported, build will contain errors")
+#pragma error "Cancelling Build"
+#endif 
+
 //
 // Driver Binary (sys)
 //
@@ -23,7 +33,7 @@
 //
 // Service Binary
 //
-#define ID_SERVICE_CONFIG_SERVICE_BIN   202
+#define ID_CONFIG_SERVICE_BIN           202
 
 //
 // Interface/Console Binary

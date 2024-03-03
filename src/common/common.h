@@ -21,4 +21,17 @@
 #define CONTROL_SERVICE_NAME                "ATFCtl"
 #define CONTROL_SERVICE_DISPLAY_NAME        "Active Transport Filter Control Service"
 
+//
+// Temporary directory and install path, this is usually "temp" at the same location as the 
+//  DriverControler executable
+//
+#define MAIN_INSTALL_PATH                   "atf_bin_directory"   
+
+//
+// Image names
+//
+#define FILENAME_ATF_DRIVER                 "ActiveTransportFilter.sys"
+#define FILENAME_ATF_DRIVER_CAT             "ActiveTransportFilter.cat"
+#define FILENAME_DEVICE_CONFIG_SERVICE      "DeviceConfigService.exe"
+#define FILENAME_INTERFACE_CONSOLE          "InterfaceConsole.exe"
 #endif //__ATF_COMMON__
