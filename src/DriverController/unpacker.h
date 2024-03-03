@@ -6,6 +6,8 @@
 
 #include <string>
 
+void enumResource(void);
+
 //
 // Get the install path
 //

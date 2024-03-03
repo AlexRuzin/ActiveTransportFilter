@@ -31,3 +31,23 @@ int32_t ExtractResourceToPath(int resourceId, const std::string &resourceName, c
 
     return 0;
 }
+
+BOOL CALLBACK EnumResNameProc(HMODULE hModule, LPCSTR lpszType, LPSTR lpszName, LONG_PTR lParam) {
+    if (IS_INTRESOURCE(lpszName)) {
+        printf("Resource ID: %hu\n", (USHORT)lpszName);
+    } else {
+        wprintf(L"Resource Name: %ls\n", lpszName);
+    }
+    return TRUE; // Continue enumeration
+}
+
+void enumResource(void)
+{
+    HMODULE hModule = GetModuleHandle(NULL);
+    if (!EnumResourceNamesA(hModule, RT_RCDATA, EnumResNameProc, 0)) {
+        printf("Error enumerating resources: %lu\n", GetLastError());
+    }
+    Sleep(INFINITE);
+    return;
+}
+

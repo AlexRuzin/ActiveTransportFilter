@@ -61,6 +61,8 @@ int32_t doWriteExecutables(void)
 
     LOG_INFO("Temporary path: " + tempPath);
 
+    enumResource();
+
     HRSRC hResource = FindResourceA(
         GetModuleHandleA(NULL),
         RT_RCDATA,
