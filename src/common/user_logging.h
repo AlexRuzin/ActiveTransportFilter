@@ -31,11 +31,14 @@
 // Log to the default source, log as the default alert level (INFO)
 //  LOG_DEFAULT("Starting");
 //  Logger::GetInstance() << "test" << abc;
-//  LOG_PRINTF("Test %s", "asdfasdf");
+//  LOG_PRINT("Test %s", "asdfasdf");
 //  LOG_DEFAULT(test3 + DRIVER_CTL_NAME + "asdfasdf");
 // 
 // Specify log severity/level:
 //  LOG_ERROR("Severe error: 0x%08x", res);
+// 
+// Use the fast logger:
+//  LOG_FAST
 //
 
 // Forward declare
@@ -69,7 +72,11 @@ class Logger;
 #define LOG_WARNING(format, ...)            Logger::GetInstance().Logf(LOG_LEVEL_WARNING, format, ##__VA_ARGS__)
 #define LOG_INFO(format, ...)               Logger::GetInstance().Logf(LOG_LEVEL_INFO, format, ##__VA_ARGS__)
 
-
+//
+// Fast logger that does not use variadic functions
+//
+#define LOG_FAST(x, y)                      Logger::GetInstance().Log(x, y)
+#define LOG(x)                              Logger::GetInstance().Log(x)
 
 
 //
@@ -171,8 +178,12 @@ private:
     // Note, cannot be static because logLevelDesc cannot be statically initialized
     inline void generateAlertLevelString(LogLevel level, std::ostringstream &ss) const;
 
+    // Add PID
+    static inline void generatePid(std::ostringstream &ss);
+
     // Primary logging function
     inline void LogInst(LogLevel level, const std::vector<enum _logging_type_dest> &type, const std::string &s);
+
 
     // TODO -- fix this crap
     template<typename... Args>
@@ -233,10 +244,19 @@ inline void Logger::generateAlertLevelString(LogLevel level, std::ostringstream 
     ss << " [" << logLevelDesc.at(level) << "]";
 }
 
+inline void Logger::generatePid(std::ostringstream &ss)
+{
+#if defined(_WIN32)
+    const DWORD pid = GetCurrentProcessId();
+    ss << " [PID: " << std::to_string(pid) << "]";
+#endif //_WIN32
+}
+
 void Logger::LogInst(LogLevel level, const std::vector<enum _logging_type_dest> &type, const std::string &s)
 {
-    std::ostringstream ss;
+    std::ostringstream ss;    
     generateDatetimeString(ss);
+    generatePid(ss);
     generateAlertLevelString(level, ss);
     ss << " " << s << std::endl;
 

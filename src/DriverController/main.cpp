@@ -6,25 +6,44 @@
 #include "../common/user_logging.h"
 #include "../common/common.h"
 
+#pragma comment(lib, "Advapi32.lib")
+
 int32_t main(int32_t argc, char argv[])
 {
     LOG_INIT(DRIVER_CTL_NAME, LOG_SOURCE_WINDOWS_DEBUG);
 
-    LOG_WARNING("Test %s", "asdfasdf");
-    LOG_WARNING("nope");
-    LOG_DEFAULT("TEST");
-    LOG_DEFAULT(std::string("test"));
-    std::string test3 = "asdfasdf";
-    LOG_DEFAULT(test3 + DRIVER_CTL_NAME + "asdfasdf");
+    LOG_INFO("Starting process: %s", DRIVER_CTL_NAME);
 
-    int val = 0x02342;
-    LOG_ERROR("Severe error: 0x%08x", val);
+    SC_HANDLE scmHandle = InitializeScm();
+    if (scmHandle == NULL) {
+        LOG_ERROR("Failed to Initialze SCM");
+        return -1;
+    }
 
-    LOG_INFO("Test %s", "asdfasdf");
+    LOG("Opened SCM successfully");
 
-    Logger::GetInstance() << "test";
+    static const SERVICE_PARAMS driverService(
+        DRIVER_SERVICE_NAME,
+        DRIVER_SERVICE_DISPLAY_NAME,
+        SERVICE_ALL_ACCESS,
+        SERVICE_KERNEL_DRIVER,
+        SERVICE_DEMAND_START,
+        SERVICE_ERROR_NORMAL,
+        DRIVER_BIN_PATH
+    );
 
-    test();
+    SC_HANDLE driverServiceHandle = CreateScmService(scmHandle, driverService);
+    if (driverServiceHandle == NULL) {
+        CloseScmHandle(scmHandle);
+        return -1;
+    }
+
+    LOG("Successfully opened service: %s", driverService.nameToDisplay);
+
+
+    LOG("%s completed operations, closing.", DRIVER_CTL_NAME);
+    CloseScmHandle(driverServiceHandle);
+    CloseScmHandle(scmHandle);
 
     return 0;
 }
