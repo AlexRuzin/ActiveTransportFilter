@@ -1,6 +1,6 @@
 #include <Windows.h>
 
-#include "main.h"
+#include "interface_main.h"
 
 int main(void)
 {
