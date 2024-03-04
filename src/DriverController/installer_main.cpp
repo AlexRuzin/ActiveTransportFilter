@@ -25,7 +25,7 @@ int32_t doServiceStartup(void);
 //
 // Cleanup of the installer directory (MAIN_INSTALL_PATH) (see common.h)
 //
-int32_t cleanInstallDirectory(std::string &path);
+int32_t cleanInstallDirectory(const std::string &path);
 
 
 //
@@ -35,7 +35,7 @@ int32_t main(int32_t argc, char argv[])
 {
     LOG_INIT(DRIVER_CTL_NAME, LOG_SOURCE_WINDOWS_DEBUG);
 
-    LOG_INFO("Starting process: %s", DRIVER_CTL_NAME);
+    LOG_INFO("Starting process(1): %s", DRIVER_CTL_NAME);
 
     int32_t res = -1;
 
@@ -57,10 +57,12 @@ int32_t main(int32_t argc, char argv[])
         return res;
     }
 
+    LOG_INFO("%s completed operations, closing", DRIVER_CTL_NAME);
+
     return 0;
 }
 
-int32_t cleanInstallDirectory(std::string &path)
+int32_t cleanInstallDirectory(const std::string &path)
 {
     LOG_INFO("Deleting temp directory: " + path);
     RemoveDirectoryA(path.c_str());
@@ -95,7 +97,7 @@ int32_t doWriteExecutables(void)
     for (std::map<int, std::string>::const_iterator i = resPaths.begin(); i != resPaths.end(); i++) {
         const std::string path = tempPath + "\\" + i->second;
 
-        LOG_INFO("Extracting file: %s (id: 0x%08x)", i->second, path);
+        LOG_INFO("Extracting file: %s (id: 0x%08x)", i->second.c_str(), i->first);
 
         res = ExtractResourceToPath(i->first, path);
         if (res) {
@@ -117,6 +119,11 @@ int32_t doServiceStartup(void)
 
     LOG("Opened SCM successfully");
 
+    std::string tempPath;
+    GetTemporaryFilePath(tempPath);  
+
+    const std::string driverFullPath = tempPath + DRIVER_BIN_PATH;
+
     static const SERVICE_PARAMS driverService(
         DRIVER_SERVICE_NAME,
         DRIVER_SERVICE_DISPLAY_NAME,
@@ -124,7 +131,7 @@ int32_t doServiceStartup(void)
         SERVICE_KERNEL_DRIVER,
         SERVICE_DEMAND_START,
         SERVICE_ERROR_NORMAL,
-        DRIVER_BIN_PATH
+        driverFullPath.c_str()
     );
 
     SC_HANDLE driverServiceHandle = CreateScmService(scmHandle, driverService);
@@ -133,10 +140,10 @@ int32_t doServiceStartup(void)
         return -1;
     }
 
-    LOG_INFO("Successfully opened service: %s", driverService.nameToDisplay);
+    LOG_INFO("Successfully opened service: %s (handle: 0x%08x, err: 0x%08x)", driverService.nameToDisplay.c_str(), driverServiceHandle, GetLastError());
 
 
-    LOG_INFO("%s completed operations, closing.", DRIVER_CTL_NAME);
+    //TODO cleanup
     CloseScmHandle(driverServiceHandle);
     CloseScmHandle(scmHandle);
 
