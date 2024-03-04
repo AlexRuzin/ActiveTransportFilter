@@ -53,11 +53,11 @@ NTSTATUS DriverEntry(
     NTSTATUS ntStatus = -1;
     DbgPrint("Entering ATF");
     ATF_DEBUG(DriverEntry, "Entering ActiveTransportFilter");
-    
+
 
     ATF_ASSERT(driverObj);
     ATF_ASSERT(registryPath);    
-    
+
     // Initialize config ONLY, i.e. strings, callbacks and other constants for the device
     //  Keeping scope local to ntentry
     ATF_NT_CONFIG atfConfig = { 0 };
@@ -146,7 +146,7 @@ static NTSTATUS AtfInitDevice(
         ATF_ERROR(WdfControlDeviceInitAllocate, STATUS_INSUFFICIENT_RESOURCES);
         return STATUS_INSUFFICIENT_RESOURCES;
     }
-    
+
     ntStatus = WdfDeviceInitAssignName(deviceInit, &config->deviceName);
     if (!NT_SUCCESS(ntStatus)) {
         ATF_ERROR(WdfDeviceInitAssignName, ntStatus);

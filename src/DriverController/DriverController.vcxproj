@@ -101,6 +101,10 @@
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_M_X64;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -118,6 +122,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -131,6 +139,14 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -148,6 +164,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="installer_main.cpp" />
@@ -161,9 +181,6 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="DriverController.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="rcdata1.bin" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -61,11 +61,19 @@
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).sys
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetName.Replace(' ','')).sys $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).sys</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DriverSign>
       <FileDigestAlgorithm>sha256</FileDigestAlgorithm>
     </DriverSign>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).sys
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetName.Replace(' ','')).sys $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).sys</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="ActiveTransportFilter.inf" />

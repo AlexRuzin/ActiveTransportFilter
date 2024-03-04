@@ -98,6 +98,10 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -115,6 +119,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -128,6 +136,10 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -145,6 +157,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>del $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe
+copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replace(' ',''))\$(TargetName.Replace(' ','')).exe $(SolutionDir)..\bin\$(TargetName.Replace(' ','')).exe</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="driver_service_main.cpp" />
