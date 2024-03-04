@@ -12,7 +12,7 @@
 // DriverEntry:
 //  Main driver entry point
 //
-__NT_CALLBACK__
+_Use_decl_annotations_
 NTSTATUS DriverEntry(
     _In_ DRIVER_OBJECT *driverObj,
     _In_ UNICODE_STRING *registryPath
@@ -23,8 +23,7 @@ NTSTATUS DriverEntry(
 //  Callback for device add
 //  Initialize device and config structures
 //
-__NT_CALLBACK__
-NTSTATUS AtfDriverDeviceAdd(
+NTSTATUS AtfEvtWdfDriverDeviceAdd(
     _In_ WDFDRIVER wdfDriver,
     _Inout_ PWDFDEVICE_INIT deviceInit
 );
@@ -33,7 +32,6 @@ NTSTATUS AtfDriverDeviceAdd(
 // AtfDriverUnload
 //  Unloads the driver, free's WFP
 //
-__NT_CALLBACK__
-NTSTATUS AtfDriverUnload(
+VOID AtfUnloadDriver(
     _In_ WDFDRIVER driverObj
 );

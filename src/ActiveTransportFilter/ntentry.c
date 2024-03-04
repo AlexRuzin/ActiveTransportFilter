@@ -19,16 +19,24 @@ typedef struct _atf_config {
 //
 ATF_CONFIG atfConfig = { 0 };
 
-
 //
 // WDF Callbacks
 //
+EXTERN_C_START
+
 DRIVER_INITIALIZE DriverEntry;
-EVT_WDF_DRIVER_DEVICE_ADD AtfDriverDeviceAdd;
-//EVT_WDF_DRIVER_UNLOAD UnloadDriver;
+EVT_WDF_DRIVER_DEVICE_ADD AtfEvtWdfDriverDeviceAdd;
+EVT_WDF_DRIVER_UNLOAD AtfUnloadDriver;
 
+EXTERN_C_END
 
-static void AtfInitConfig(
+// https://learn.microsoft.com/en-us/cpp/preprocessor/alloc-text?view=msvc-170
+// remove?
+#pragma alloc_text(INIT, DriverEntry)
+#pragma alloc_text(PAGE, AtfEvtWdfDriverDeviceAdd)
+#pragma alloc_text(PAGE, AtfUnloadDriver)
+
+static VOID AtfInitConfig(
     _Inout_ ATF_CONFIG *config
 );
 
@@ -40,7 +48,6 @@ NTSTATUS DriverEntry(
 {
     NTSTATUS ntStatus = -1;
     ATF_DEBUG(DriverEntry, "Entering ActiveTransportFilter");
-
 
     ATF_ASSERT(driverObj);
     ATF_ASSERT(registryPath);    
@@ -56,12 +63,13 @@ NTSTATUS DriverEntry(
     //
     // Create the driver object
     //
+    WDFDRIVER wdfDriver;
     ntStatus = WdfDriverCreate(
         driverObj,
         registryPath,
         &atfConfig.wdfObjectAttributes,
         &atfConfig.wdfDriverConfig,
-        WDF_NO_HANDLE
+        &wdfDriver
     );
     if (!NT_SUCCESS(ntStatus)) {
         ATF_ERROR(WdfDriverCreate, ntStatus);
@@ -73,11 +81,11 @@ NTSTATUS DriverEntry(
     return ntStatus;
 }
 
-NTSTATUS AtfDriverDeviceAdd(
+NTSTATUS AtfEvtWdfDriverDeviceAdd(
     _In_ WDFDRIVER wdfDriver,
     _Inout_ PWDFDEVICE_INIT deviceInit)
 {
-    ATF_DEBUG(AtfDriverDeviceAdd, "Entering AtfDriverDeviceAdd");
+    ATF_DEBUG(AtfEvtWdfDriverDeviceAdd, "Entering AtfEvtWdfDriverDeviceAdd");
 
     NTSTATUS ntStatus = -1;
 
@@ -123,20 +131,18 @@ NTSTATUS AtfDriverDeviceAdd(
     return STATUS_SUCCESS;
 }
 
-NTSTATUS AtfDriverUnload(
+VOID AtfUnloadDriver(
     _In_ WDFDRIVER driverObj
 )
 {
-    ATF_DEBUG(AtfDriverUnload, "Entering AtfDriverUnload");
+    ATF_DEBUG(AtfUnloadDriver, "Entering AtfUnloadDriver");
 
     UNREFERENCED_PARAMETER(driverObj);
 
     //WPP_CLEANUP(driverObj);
-
-    return STATUS_SUCCESS;
 }
 
-static void AtfInitConfig(
+static VOID AtfInitConfig(
     _Inout_ ATF_CONFIG *config
 )
 {
@@ -149,9 +155,9 @@ static void AtfInitConfig(
     config->wdfObjectAttributes.EvtCleanupCallback = NULL;
     config->wdfObjectAttributes.EvtDestroyCallback = NULL; //todo?
 
-    WDF_DRIVER_CONFIG_INIT(&config->wdfDriverConfig, AtfDriverDeviceAdd);
-    config->wdfDriverConfig.EvtDriverUnload = (PFN_WDF_DRIVER_UNLOAD)AtfDriverUnload;
-    //config->wdfDriverConfig.EvtDriverDeviceAdd = (PFN_WDF_DRIVER_DEVICE_ADD)AtfDriverDeviceAdd;
+    WDF_DRIVER_CONFIG_INIT(&config->wdfDriverConfig, AtfEvtWdfDriverDeviceAdd);
+    config->wdfDriverConfig.EvtDriverUnload = (PFN_WDF_DRIVER_UNLOAD)AtfUnloadDriver;
+    config->wdfDriverConfig.EvtDriverDeviceAdd = (PFN_WDF_DRIVER_DEVICE_ADD)AtfEvtWdfDriverDeviceAdd;
     //config->wdfDriverConfig.DriverInitFlags |= WdfDriverInitNonPnpDriver;
 
     RtlInitUnicodeString(&config->deviceName, TEXT(ATF_DEVICE_NAME));
