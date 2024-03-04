@@ -41,5 +41,8 @@
     <ClInclude Include="..\common\user_logging.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="ntentry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

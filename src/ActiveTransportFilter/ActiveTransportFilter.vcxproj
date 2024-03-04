@@ -87,6 +87,7 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
   <ItemGroup>
     <ClInclude Include="..\common\common.h" />
     <ClInclude Include="..\common\user_logging.h" />
+    <ClInclude Include="ntentry.h" />
     <ClInclude Include="trace.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
