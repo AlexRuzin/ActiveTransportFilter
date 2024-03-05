@@ -12,7 +12,7 @@
 // DriverEntry:
 //  Main driver entry point
 //
-_Use_decl_annotations_
+_Use_decl_annotations_ 
 NTSTATUS DriverEntry(
     _In_ DRIVER_OBJECT *driverObj,
     _In_ UNICODE_STRING *registryPath

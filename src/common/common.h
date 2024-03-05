@@ -12,6 +12,15 @@
 #define SDDL_STRING                         L"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
 
 //
+// FWPM Engine Registration (filtering engine registered at drive level)
+//
+#define DRIVER_FWPM_SERVICENAME             L"atf_filter_service"
+#define DRIVER_FWPM_DISPLAYNAME             L"atf_filter_provider"
+#define DRIVER_FWPM_DESC                    L"ATF Provider Object"
+
+
+
+//
 // DriverController
 //
 #define DRIVER_CTL_NAME                     "DriverController"

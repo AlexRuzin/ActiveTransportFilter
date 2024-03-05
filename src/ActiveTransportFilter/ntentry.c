@@ -2,7 +2,9 @@
 #include <wdf.h>
 //#include <initguid.h>
 
+#include "wfp.h"
 #include "trace.h"
+#include "ntentry.h"
 #include "../common/common.h"
 
 // Structure for initializing NT entry
@@ -76,6 +78,12 @@ NTSTATUS DriverEntry(
         return ntStatus;
     }
 
+    ntStatus = InitializeWfp();
+    if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(WdfDriverCreate, ntStatus);
+        return ntStatus;
+    }
+
     ATF_DEBUG(WdfDriverCreate, "Successfully created driver object");
 
     return ntStatus;
@@ -85,6 +93,7 @@ NTSTATUS AtfEvtWdfDriverDeviceAdd(
     _In_ WDFDRIVER wdfDriver,
     _Inout_ PWDFDEVICE_INIT deviceInit)
 {
+    DbgPrint("Entering Device Add..");
     ATF_DEBUG(AtfEvtWdfDriverDeviceAdd, "Entering AtfEvtWdfDriverDeviceAdd");
 
     NTSTATUS ntStatus = -1;
@@ -127,7 +136,7 @@ NTSTATUS AtfEvtWdfDriverDeviceAdd(
     DEVICE_OBJECT *deviceObj = WdfDeviceWdmGetDeviceObject(wdfDevice);
     UNREFERENCED_PARAMETER(deviceObj);
 
-    ATF_DEBUG(AtfInitDevice, "Successfully created device");
+    ATF_DEBUG(AtfInitDevice, "Successfully created device object");
     return STATUS_SUCCESS;
 }
 

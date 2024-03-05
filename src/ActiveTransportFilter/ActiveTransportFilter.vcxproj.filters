@@ -30,6 +30,9 @@
     <ClCompile Include="ntentry.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="wfp.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="trace.h">
@@ -42,6 +45,9 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="ntentry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wfp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
