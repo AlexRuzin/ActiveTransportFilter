@@ -12,9 +12,11 @@ static HANDLE kmfeHandle; //Kernel Mode Filter Engine (KMFE)
 static DEVICE_OBJECT *atfDevice = NULL;
 
 NTSTATUS InitializeWfp(
-    VOID
+    _In_ DEVICE_OBJECT *deviceObj 
 )
 {
+    ATF_ASSERT(deviceObj);
+
     ATF_DEBUG(InitializeWfp, "Entering...");
     NTSTATUS ntStatus = -1;
 
@@ -68,6 +70,17 @@ NTSTATUS InitializeWfp(
         return ntStatus;
     }
 
+    atfDevice = deviceObj;
+
     ATF_DEBUG(InitializeWfp, "Success...");
     return ntStatus;
+}
+
+NTSTATUS DestroyWfp(
+    VOID
+)
+{
+    FwpmTransactionCommit(kmfeHandle);
+    FwpmProviderDeleteByKey(kmfeHandle, &ATF_FWPM_PROVIDER_KEY);
+    FwpmEngineClose(kmfeHandle);
 }

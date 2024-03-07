@@ -19,16 +19,6 @@ NTSTATUS DriverEntry(
 );
 
 //
-// AtfDriverDeviceAdd
-//  Callback for device add
-//  Initialize device and config structures
-//
-NTSTATUS AtfEvtWdfDriverDeviceAdd(
-    _In_ WDFDRIVER wdfDriver,
-    _Inout_ PWDFDEVICE_INIT deviceInit
-);
-
-//
 // AtfDriverUnload
 //  Unloads the driver, free's WFP
 //

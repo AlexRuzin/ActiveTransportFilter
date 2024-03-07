@@ -1,10 +1,11 @@
 #pragma once
 
+#define INITGUID
 #include <initguid.h>
 
-// 6f752cae-aae6-4f05-a9f8-402d149a1a31
 EXTERN_C_START
 
+// 6f752cae-aae6-4f05-a9f8-402d149a1a31
 DEFINE_GUID(
     ATF_FWPM_PROVIDER_KEY, 
     0x6f752cae, 
@@ -18,5 +19,9 @@ EXTERN_C_END
 
 
 NTSTATUS InitializeWfp(
+    _In_ DEVICE_OBJECT *deviceObj
+);
+
+NTSTATUS DestroyWfp(
     VOID
 );

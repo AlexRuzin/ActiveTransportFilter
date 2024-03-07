@@ -22,12 +22,16 @@ typedef struct _atf_config {
 ATF_CONFIG atfConfig = { 0 };
 
 //
+// Success on DriverEntry()
+//
+static BOOLEAN isWfpRunning = FALSE;
+
+//
 // WDF Callbacks
 //
 EXTERN_C_START
 
 DRIVER_INITIALIZE DriverEntry;
-EVT_WDF_DRIVER_DEVICE_ADD AtfEvtWdfDriverDeviceAdd;
 EVT_WDF_DRIVER_UNLOAD AtfUnloadDriver;
 
 EXTERN_C_END
@@ -35,11 +39,22 @@ EXTERN_C_END
 // https://learn.microsoft.com/en-us/cpp/preprocessor/alloc-text?view=msvc-170
 // remove?
 #pragma alloc_text(INIT, DriverEntry)
-#pragma alloc_text(PAGE, AtfEvtWdfDriverDeviceAdd)
 #pragma alloc_text(PAGE, AtfUnloadDriver)
 
+//
+// Initialize driver callbacks, strings, and constants
+//
 static VOID AtfInitConfig(
     _Inout_ ATF_CONFIG *config
+);
+
+//
+// Create the physical device object (PDO)
+//
+static NTSTATUS AtfCreateDeviceObject(
+    _In_    DRIVER_OBJECT *driverObj,
+    _In_    UNICODE_STRING *registryPath,
+    _Out_   DEVICE_OBJECT **deviceObjOut
 );
 
 _Use_decl_annotations_
@@ -63,8 +78,47 @@ NTSTATUS DriverEntry(
     AtfInitConfig(&atfConfig);
 
     //
-    // Create the driver object
+    // Create the driver/device object
     //
+    DEVICE_OBJECT *deviceObject = NULL;
+    ntStatus = AtfCreateDeviceObject(
+        driverObj,
+        registryPath,
+        &deviceObject
+    );
+    if (!NT_SUCCESS(ntStatus) || !deviceObject) {
+        ATF_ERROR(AtfCreateDeviceObject, ntStatus);
+        return ntStatus;
+    }
+
+    //
+    // Initialize the WFP subsystem, but do not populate callouts yet
+    //
+    ntStatus = InitializeWfp(deviceObject);
+    if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(WdfDriverCreate, ntStatus);
+        return ntStatus;
+    }
+
+    ATF_DEBUG(WdfDriverCreate, "Successfully created driver object");
+    isWfpRunning = TRUE;
+
+    return ntStatus;
+}
+
+static NTSTATUS AtfCreateDeviceObject(
+    _In_    DRIVER_OBJECT *driverObj,
+    _In_    UNICODE_STRING *registryPath,
+    _Out_   DEVICE_OBJECT **deviceObjOut
+)
+{
+    ATF_ASSERT(driverObj);
+    ATF_ASSERT(registryPath);
+    ATF_ASSERT(deviceObjOut);
+
+    *deviceObjOut = NULL;
+    NTSTATUS ntStatus = -1;
+
     WDFDRIVER wdfDriver;
     ntStatus = WdfDriverCreate(
         driverObj,
@@ -78,30 +132,12 @@ NTSTATUS DriverEntry(
         return ntStatus;
     }
 
-    ntStatus = InitializeWfp();
-    if (!NT_SUCCESS(ntStatus)) {
-        ATF_ERROR(WdfDriverCreate, ntStatus);
-        return ntStatus;
-    }
-
-    ATF_DEBUG(WdfDriverCreate, "Successfully created driver object");
-
-    return ntStatus;
-}
-
-NTSTATUS AtfEvtWdfDriverDeviceAdd(
-    _In_ WDFDRIVER wdfDriver,
-    _Inout_ PWDFDEVICE_INIT deviceInit)
-{
-    DbgPrint("Entering Device Add..");
-    ATF_DEBUG(AtfEvtWdfDriverDeviceAdd, "Entering AtfEvtWdfDriverDeviceAdd");
-
-    NTSTATUS ntStatus = -1;
+    ATF_DEBUG(WdfDriverCreate, "Driver object created");
 
     UNICODE_STRING sddlString = { 0 };
     RtlInitUnicodeString(&sddlString, TEXT(SDDL_STRING)); //TODO
 
-    deviceInit = WdfControlDeviceInitAllocate(
+    PWDFDEVICE_INIT deviceInit = WdfControlDeviceInitAllocate(
         wdfDriver, 
         &sddlString
     );
@@ -133,8 +169,7 @@ NTSTATUS AtfEvtWdfDriverDeviceAdd(
         return ntStatus;
     }
 
-    DEVICE_OBJECT *deviceObj = WdfDeviceWdmGetDeviceObject(wdfDevice);
-    UNREFERENCED_PARAMETER(deviceObj);
+    *deviceObjOut = WdfDeviceWdmGetDeviceObject(wdfDevice);
 
     ATF_DEBUG(AtfInitDevice, "Successfully created device object");
     return STATUS_SUCCESS;
@@ -148,7 +183,9 @@ VOID AtfUnloadDriver(
 
     UNREFERENCED_PARAMETER(driverObj);
 
-    //WPP_CLEANUP(driverObj);
+    if (isWfpRunning) {
+        DestroyWfp();
+    }
 }
 
 static VOID AtfInitConfig(
@@ -164,10 +201,19 @@ static VOID AtfInitConfig(
     config->wdfObjectAttributes.EvtCleanupCallback = NULL;
     config->wdfObjectAttributes.EvtDestroyCallback = NULL; //todo?
 
-    WDF_DRIVER_CONFIG_INIT(&config->wdfDriverConfig, AtfEvtWdfDriverDeviceAdd);
+    //WDF_DRIVER_CONFIG_INIT(&config->wdfDriverConfig, AtfEvtWdfDriverDeviceAdd);
+    WDF_DRIVER_CONFIG_INIT(&config->wdfDriverConfig, NULL);
     config->wdfDriverConfig.EvtDriverUnload = (PFN_WDF_DRIVER_UNLOAD)AtfUnloadDriver;
-    config->wdfDriverConfig.EvtDriverDeviceAdd = (PFN_WDF_DRIVER_DEVICE_ADD)AtfEvtWdfDriverDeviceAdd;
-    //config->wdfDriverConfig.DriverInitFlags |= WdfDriverInitNonPnpDriver;
+
+    //
+    // Important note: since this is not a PnP driver (as it is WFP), it does not have a device that will
+    //  call the deviceAdd callback when a device is added. Instead, set the NonPnpDriver flag, disable
+    //  the EvtDriverDeviceAdd callback, and instantiate WFP in DriverEntry()
+    // 
+    // https://learn.microsoft.com/en-us/windows-hardware/drivers/wdf/using-kernel-mode-driver-framework-with-non-pnp-drivers
+    //
+    //config->wdfDriverConfig.EvtDriverDeviceAdd = (PFN_WDF_DRIVER_DEVICE_ADD)AtfEvtWdfDriverDeviceAdd;
+    config->wdfDriverConfig.DriverInitFlags |= WdfDriverInitNonPnpDriver;
 
     RtlInitUnicodeString(&config->deviceName, TEXT(ATF_DEVICE_NAME));
     RtlInitUnicodeString(&config->dosDeviceName, TEXT(ATF_DOS_DEVICE_NAME));
