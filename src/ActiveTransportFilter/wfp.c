@@ -1,7 +1,6 @@
 #include <ntddk.h>
 #include <wdf.h>
 #include <fwpmk.h>
-#include <ndis.h>
 #include <fwpsk.h>
 
 #include "trace.h"

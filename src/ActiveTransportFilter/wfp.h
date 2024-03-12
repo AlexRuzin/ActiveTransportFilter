@@ -1,7 +1,7 @@
 #pragma once
 
 #define INITGUID
-#include <initguid.h>
+//#include <initguid.h>
 
 EXTERN_C_START
 
