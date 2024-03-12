@@ -1,12 +1,26 @@
-
 #include <ntddk.h>
 #include <wdf.h>
 #include <fwpmk.h>
-//#include <fwpsk.h>
+#include <ndis.h>
+#include <fwpsk.h>
 
-#include "wfp.h"
 #include "trace.h"
+#include "filter.h"
 #include "../common/common.h"
+#include "../common/default_config.h"
+
+//
+// Main callout functions
+//
+void NTAPI AtfClassifyFunc(
+    _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
+    _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
+    _Inout_opt_ void *layerData,
+    _In_opt_    const void *classifyContext,
+    _In_        const FWPS_FILTER3 *filter,
+    _In_        UINT64 flow_context,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+);
 
 static HANDLE kmfeHandle; //Kernel Mode Filter Engine (KMFE)
 static DEVICE_OBJECT *atfDevice = NULL;
@@ -83,4 +97,19 @@ NTSTATUS DestroyWfp(
     FwpmTransactionCommit(kmfeHandle);
     FwpmProviderDeleteByKey(kmfeHandle, &ATF_FWPM_PROVIDER_KEY);
     FwpmEngineClose(kmfeHandle);
+
+    return STATUS_SUCCESS;
+}
+
+void NTAPI AtfClassifyFunc(
+    _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
+    _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
+    _Inout_opt_ void *layerData,
+    _In_opt_    const void *classifyContext,
+    _In_        const FWPS_FILTER3 *filter,
+    _In_        UINT64 flow_context,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+)
+{
+    return;
 }

@@ -33,13 +33,13 @@
     <ClCompile Include="wfp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="trace.h">
       <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\common\common.h">
-      <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\common\user_logging.h">
       <Filter>common</Filter>
@@ -49,6 +49,15 @@
     </ClInclude>
     <ClInclude Include="wfp.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\default_config.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

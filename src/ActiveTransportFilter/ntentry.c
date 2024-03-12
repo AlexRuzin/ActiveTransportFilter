@@ -57,7 +57,8 @@ static NTSTATUS AtfCreateDeviceObject(
     _Out_   DEVICE_OBJECT **deviceObjOut
 );
 
-_Use_decl_annotations_
+_Function_class_(DRIVER_INITIALIZE)
+_IRQL_requires_same_
 NTSTATUS DriverEntry(
     _In_ DRIVER_OBJECT *driverObj,
     _In_ UNICODE_STRING *registryPath

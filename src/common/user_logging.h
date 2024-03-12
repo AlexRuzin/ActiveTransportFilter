@@ -1,8 +1,5 @@
 #pragma once
 
-#ifndef __ATF_USER_LOGGING__
-#define __ATF_USER_LOGGING__
-
 #if defined(_WIN32)
 #include <Windows.h>
 #endif //_WIN32
@@ -379,5 +376,3 @@ inline void Logger::Log(const T &s)
 {
     Log(currentInstance->defaultLogLevel, s);
 }
-
-#endif //__ATF_USER_LOGGING__

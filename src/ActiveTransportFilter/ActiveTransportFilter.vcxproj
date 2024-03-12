@@ -88,12 +88,15 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="filter.cpp" />
     <ClCompile Include="ntentry.c" />
     <ClCompile Include="wfp.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\common.h" />
+    <ClInclude Include="..\common\default_config.h" />
     <ClInclude Include="..\common\user_logging.h" />
+    <ClInclude Include="filter.h" />
     <ClInclude Include="ntentry.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="wfp.h" />

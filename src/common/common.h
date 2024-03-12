@@ -43,4 +43,5 @@
 #define FILENAME_ATF_DRIVER_CAT             "ActiveTransportFilter.cat"
 #define FILENAME_DEVICE_CONFIG_SERVICE      "DeviceConfigService.exe"
 #define FILENAME_INTERFACE_CONSOLE          "InterfaceConsole.exe"
+
 #endif //__ATF_COMMON__
