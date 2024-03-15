@@ -1,20 +1,25 @@
+#if _MSC_VER > 1000
 #pragma once
+#endif //_MSC_VER > 1000
 
-#ifndef __ATF_COMMON__
-#define __ATF_COMMON__
+//
+// Central configuration for the entire project
+//  Contains mostly strings and constants that are shared between service, driver, etc
+//
 
 //
 // ActiveTransportFilter Driver
 //
-#define ATF_DEVICE_NAME                     L"\\Device\\atf_filter"
-#define ATF_DOS_DEVICE_NAME                 L"\\DosDevices\\atf_filter"
+#define ATF_DEVICE_NAME                     "\\Device\\atf_filter"
+#define ATF_DOS_DEVICE_NAME                 "\\DosDevices\\atf_filter"
 
-#define SDDL_STRING                         L"D:P(A;;GA;;;SY)(A;;GA;;;BA)"
+#define SDDL_STRING                         "D:P(A;;GA;;;SY)(A;;GA;;;BA)"
+
 
 //
 // FWPM Engine Registration (filtering engine registered at drive level)
 //
-#define DRIVER_FWPM_SERVICENAME             L"atf_filter_service"
+#define DRIVER_FWPM_SERVICENAME             "atf_filter_service"
 #define DRIVER_FWPM_DISPLAYNAME             L"atf_filter_provider"
 #define DRIVER_FWPM_DESC                    L"ATF Provider Object"
 
@@ -30,6 +35,7 @@
 #define CONTROL_SERVICE_NAME                "ATFCtl"
 #define CONTROL_SERVICE_DISPLAY_NAME        "Active Transport Filter Control Service"
 
+
 //
 // Temporary directory and install path, this is usually "temp" at the same location as the 
 //  DriverControler executable
@@ -43,5 +49,3 @@
 #define FILENAME_ATF_DRIVER_CAT             "ActiveTransportFilter.cat"
 #define FILENAME_DEVICE_CONFIG_SERVICE      "DeviceConfigService.exe"
 #define FILENAME_INTERFACE_CONSOLE          "InterfaceConsole.exe"
-
-#endif //__ATF_COMMON__

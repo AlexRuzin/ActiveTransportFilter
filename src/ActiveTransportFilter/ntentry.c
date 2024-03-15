@@ -1,10 +1,9 @@
 #include <ntddk.h>
 #include <wdf.h>
-//#include <initguid.h>
 
+#include "ntentry.h"
 #include "wfp.h"
 #include "trace.h"
-#include "ntentry.h"
 #include "../common/common.h"
 
 // Structure for initializing NT entry

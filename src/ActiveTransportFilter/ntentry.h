@@ -1,7 +1,6 @@
+#if _MSC_VER > 1000
 #pragma once
-
-#include <ntddk.h>
-#include <wdf.h>
+#endif //_MSC_VER > 1000
 
 //
 // Used in this driver to indicate that the function is a callback from the NT kernel

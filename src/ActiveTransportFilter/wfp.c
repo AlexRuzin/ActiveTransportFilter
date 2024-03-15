@@ -1,10 +1,23 @@
-#include <ntddk.h>
-#include <wdf.h>
-#include <fwpmk.h>
-#include <fwpsk.h>
+#if !defined(NT)
+#define NT
+#endif //NT
 
+#if !defined(NDIS60)
+#define NDIS60 1
+#endif //NDIS60
+
+#if !defined(NDIS_SUPPORT_NDIS6)
+#define NDIS_SUPPORT_NDIS6 1
+#endif //NDIS_SUPPORT_NDIS6
+
+#include <ntddk.h>
+#include <fwpsk.h>
+#include <fwpmk.h>
+
+#include "wfp.h"
 #include "trace.h"
 #include "filter.h"
+
 #include "../common/common.h"
 #include "../common/default_config.h"
 
@@ -20,6 +33,7 @@ void NTAPI AtfClassifyFunc(
     _In_        UINT64 flow_context,
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 );
+
 
 static HANDLE kmfeHandle; //Kernel Mode Filter Engine (KMFE)
 static DEVICE_OBJECT *atfDevice = NULL;
@@ -110,5 +124,14 @@ void NTAPI AtfClassifyFunc(
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 )
 {
+    UNREFERENCED_PARAMETER(fixedValues);
+    UNREFERENCED_PARAMETER(metaValues);
+    UNREFERENCED_PARAMETER(layerData);
+    UNREFERENCED_PARAMETER(classifyContext);
+    UNREFERENCED_PARAMETER(filter);
+    UNREFERENCED_PARAMETER(fixedValues);
+    UNREFERENCED_PARAMETER(flow_context);
+    UNREFERENCED_PARAMETER(classify_out);
+
     return;
 }
