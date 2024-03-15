@@ -103,6 +103,8 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
   <ItemGroup>
     <ClInclude Include="..\common\common.h" />
     <ClInclude Include="..\common\default_config.h" />
+    <ClInclude Include="..\common\errors.h" />
+    <ClInclude Include="..\common\user_driver_transport.h" />
     <ClInclude Include="..\common\user_logging.h" />
     <ClInclude Include="filter.h" />
     <ClInclude Include="ntentry.h" />

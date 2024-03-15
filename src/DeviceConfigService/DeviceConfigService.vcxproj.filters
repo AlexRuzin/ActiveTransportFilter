@@ -18,9 +18,15 @@
     <ClCompile Include="driver_service_main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ini_reader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver_service_main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ini_reader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

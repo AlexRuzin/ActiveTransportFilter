@@ -7,6 +7,7 @@
 //  Contains mostly strings and constants that are shared between service, driver, etc
 //
 
+
 //
 // ActiveTransportFilter Driver
 //
@@ -32,6 +33,12 @@
 #define DRIVER_SERVICE_NAME                 "ActiveTransportFilterDriver"
 #define DRIVER_SERVICE_DISPLAY_NAME         "Active Transport Filter Driver"
 #define DRIVER_BIN_PATH                     "ActiveTransportFilter.sys"
+
+
+//
+// DeviceConfigService
+//  Service that sends configurations to the driver via IOCTL
+//
 #define CONTROL_SERVICE_NAME                "ATFCtl"
 #define CONTROL_SERVICE_DISPLAY_NAME        "Active Transport Filter Control Service"
 
@@ -41,6 +48,14 @@
 //  DriverControler executable
 //
 #define MAIN_INSTALL_PATH                   "atf_bin_directory"   
+
+
+//
+// Dynamic and filter configuration ini file
+//
+#define GLOBAL_IP_FILTER_INI                MAIN_INSTALL_PATH "\\filter_config.ini"
+#define GLOBAL_IP_FILTER_INI_DEBUG          "..\\config\\filter_config.ini"
+
 
 //
 // Image names

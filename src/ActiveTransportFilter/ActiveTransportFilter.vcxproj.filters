@@ -59,5 +59,11 @@
     <ClInclude Include="..\common\default_config.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="..\common\user_driver_transport.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\errors.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
