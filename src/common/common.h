@@ -39,6 +39,7 @@
 // DeviceConfigService
 //  Service that sends configurations to the driver via IOCTL
 //
+#define CONTROL_SERVICE_SLEEP_MS            3000 // Sleep time until the control service attempts to communicate with device
 #define CONTROL_SERVICE_NAME                "ATFCtl"
 #define CONTROL_SERVICE_DISPLAY_NAME        "Active Transport Filter Control Service"
 
@@ -64,3 +65,4 @@
 #define FILENAME_ATF_DRIVER_CAT             "ActiveTransportFilter.cat"
 #define FILENAME_DEVICE_CONFIG_SERVICE      "DeviceConfigService.exe"
 #define FILENAME_INTERFACE_CONSOLE          "InterfaceConsole.exe"
+#define FILENAME_CONFIG                     "filter_config.ini"

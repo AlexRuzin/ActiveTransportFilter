@@ -79,6 +79,12 @@ VOID AtfIoDeviceControl(
         break;
     }
 
+    if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(AtfIoDeviceControl, ntStatus);
+    } else {
+        ATF_DEBUG(AtfIoDeviceControl, "IOCTL Successfully processed");
+    }
+
     WdfRequestComplete(request, ntStatus);
 }
 
@@ -87,8 +93,32 @@ static NTSTATUS AtfHandleSendWfpConfig(
     _In_ size_t bufLen
 )
 {
-    UNREFERENCED_PARAMETER(request);
-    UNREFERENCED_PARAMETER(bufLen);
+    NTSTATUS ntStatus = STATUS_SUCCESS;
 
-    return STATUS_SUCCESS;
+    if (bufLen == 0) {
+        return STATUS_NO_DATA_DETECTED;
+    }
+
+    if (bufLen != sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
+        return STATUS_BUFFER_TOO_SMALL;
+    }
+
+    USER_DRIVER_FILTER_TRANSPORT_DATA data;
+    RtlZeroMemory(&data, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+
+    ntStatus = WdfRequestRetrieveInputBuffer(
+        request,
+        sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA),
+        (VOID *)&data,
+        NULL
+    );
+    if (!NT_SUCCESS(ntStatus)) {
+        return ntStatus;
+    }
+
+    if (data.magic == FILTER_TRANSPORT_MAGIC && data.size == sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
+        ATF_DEBUG(WdfRequestRetrieveInputBuffer, "Returned correct IOCTL magic!");
+    }
+
+    return ntStatus;
 }

@@ -17,6 +17,11 @@
 //
 #define ID_USER_INTERFACE_CONSOLE_BIN   103
 
+//
+// Blacklist configuration file
+//
+#define ID_WFP_CONFIG_FILE              104
+
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED

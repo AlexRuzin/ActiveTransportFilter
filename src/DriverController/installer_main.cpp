@@ -7,7 +7,9 @@
 #include "resource.h"
 #include "service.h"
 #include "unpacker.h"
+#include "../common/shared.h"
 #include "../common/user_logging.h"
+#include "../common/errors.h"
 #include "../common/common.h"
 
 #pragma comment(lib, "Advapi32.lib")
@@ -15,29 +17,34 @@
 //
 // Write executable files to <currProcessLocation>\\MAIN_INSTALL_PATH (see common.h)
 //
-int32_t doWriteExecutables(void);
+ATF_ERROR doWriteExecutables(void);
 
 //
-// Startup the driver service, and the primary config service (see common.h)
+// Startup the driver service (see common.h)
 // 
-int32_t doServiceStartup(void);
+ATF_ERROR doDriverServiceStartup(void);
+
+//
+// Startup the driver config service (see common.h)
+//
+ATF_ERROR doConfigServiceStartup(void);
 
 //
 // Cleanup of the installer directory (MAIN_INSTALL_PATH) (see common.h)
 //
-int32_t cleanInstallDirectory(const std::string &path);
+ATF_ERROR cleanInstallDirectory(const std::string &path);
 
 
 //
 // Entry point
 //
-int32_t main(int32_t argc, char argv[])
+ATF_ERROR main(int32_t argc, char argv[])
 {
     LOG_INIT(DRIVER_CTL_NAME, LOG_SOURCE_WINDOWS_DEBUG);
 
     LOG_INFO("Starting process(1): %s", DRIVER_CTL_NAME);
 
-    int32_t res = -1;
+    ATF_ERROR res = ATF_ERROR_FAIL;
 
     //
     // Unpack the driver and service
@@ -47,22 +54,33 @@ int32_t main(int32_t argc, char argv[])
         LOG_ERROR("Failed to write executables: 0x%08x", res);
         return res;
     }
+    Sleep(100);
 
     //
-    // Startup the driver and service
+    // Startup the driver
     //
-    res = doServiceStartup();
+    res = doDriverServiceStartup();
     if (res) {
         LOG_ERROR("Failed to startup services: 0x%08x", res);
+        return res;
+    }
+    Sleep(100);
+
+    //
+    // Startup config service
+    //
+    res = doConfigServiceStartup();
+    if (res) {
+        LOG_ERROR("Failed to start config service: 0x%08x", res);
         return res;
     }
 
     LOG_INFO("%s completed operations, closing", DRIVER_CTL_NAME);
 
-    return 0;
+    return ATF_ERROR_OK;
 }
 
-int32_t cleanInstallDirectory(const std::string &path)
+ATF_ERROR cleanInstallDirectory(const std::string &path)
 {
     LOG_INFO("Deleting temp directory: " + path);
     RemoveDirectoryA(path.c_str());
@@ -70,13 +88,13 @@ int32_t cleanInstallDirectory(const std::string &path)
     LOG_INFO("Creating temp directory: " + path);
     CreateDirectoryA(path.c_str(), NULL);
 
-    return 0;
+    return ATF_ERROR_OK;
 }
 
-int32_t doWriteExecutables(void)
+ATF_ERROR doWriteExecutables(void)
 {
     std::string tempPath;
-    int32_t res = GetTemporaryFilePath(tempPath);
+    ATF_ERROR res = GetTemporaryFilePath(tempPath);
     if (res) {
         LOG_ERROR("Failed to get temp path: 0x%08x", res);
         return res;
@@ -91,7 +109,8 @@ int32_t doWriteExecutables(void)
     static const std::map<int, std::string> resPaths = {
         { ID_DRIVER_BIN_SYS, FILENAME_ATF_DRIVER },
         { ID_CONFIG_SERVICE_BIN, FILENAME_DEVICE_CONFIG_SERVICE },
-        { ID_USER_INTERFACE_CONSOLE_BIN, FILENAME_INTERFACE_CONSOLE }
+        { ID_USER_INTERFACE_CONSOLE_BIN, FILENAME_INTERFACE_CONSOLE },
+        { ID_WFP_CONFIG_FILE, FILENAME_CONFIG }
     };
 
     for (std::map<int, std::string>::const_iterator i = resPaths.begin(); i != resPaths.end(); i++) {
@@ -106,15 +125,53 @@ int32_t doWriteExecutables(void)
         }
     }
 
-    return 0;
+    return ATF_ERROR_OK;
 }
 
-int32_t doServiceStartup(void)
+ATF_ERROR doConfigServiceStartup(void)
+{
+    std::string tempPath;
+    GetTemporaryFilePath(tempPath); 
+
+    const std::string fullConfigServicePath = tempPath + FILENAME_DEVICE_CONFIG_SERVICE;
+    if (!shared::IsFileExists(fullConfigServicePath)) {
+        return ATF_ERROR_FILE_NOT_FOUND;
+    }
+
+
+    STARTUPINFOA startupInfo = { 0 };
+    startupInfo.cb = sizeof(STARTUPINFOA);
+
+    PROCESS_INFORMATION procInfo = { 0 };
+
+    if (!CreateProcessA(
+        fullConfigServicePath.c_str(),
+        NULL,
+        NULL,
+        NULL,
+        FALSE,
+        0,
+        NULL,
+        NULL,
+        &startupInfo,
+        &procInfo
+    )) 
+    {
+        LOG_ERROR("CreateProcessA failed: 0x%08x", GetLastError());
+        return ATF_FAILED_PROC_CREATE;
+    }
+
+    LOG_INFO("Created config service. PID: %d", procInfo.dwProcessId);
+
+    return ATF_ERROR_OK;
+}
+
+ATF_ERROR doDriverServiceStartup(void)
 {
     SC_HANDLE scmHandle = InitializeScm();
     if (scmHandle == NULL) {
         LOG_ERROR("Failed to Initialze SCM");
-        return -1;
+        return ATF_INIT_SCM;
     }
 
     LOG("Opened SCM successfully");
@@ -123,6 +180,9 @@ int32_t doServiceStartup(void)
     GetTemporaryFilePath(tempPath);  
 
     const std::string driverFullPath = tempPath + DRIVER_BIN_PATH;
+    if (!shared::IsFileExists(driverFullPath)) {
+        return ATF_ERROR_FILE_NOT_FOUND;
+    }
 
     static const SERVICE_PARAMS driverService(
         DRIVER_SERVICE_NAME,
@@ -137,15 +197,14 @@ int32_t doServiceStartup(void)
     SC_HANDLE driverServiceHandle = CreateScmService(scmHandle, driverService);
     if (driverServiceHandle == NULL) {
         CloseScmHandle(scmHandle);
-        return -1;
+        return ATF_CREATE_SERVICE;
     }
 
     LOG_INFO("Successfully opened service: %s (handle: 0x%08x, err: 0x%08x)", driverService.nameToDisplay.c_str(), driverServiceHandle, GetLastError());
-
 
     //TODO cleanup
     CloseScmHandle(driverServiceHandle);
     CloseScmHandle(scmHandle);
 
-    return 0;
+    return ATF_ERROR_OK;
 }

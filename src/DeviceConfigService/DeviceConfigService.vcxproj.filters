@@ -24,6 +24,9 @@
     <ClCompile Include="ini_reader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="driver_comm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="driver_service_main.h">
@@ -34,6 +37,9 @@
     </ClInclude>
     <ClInclude Include="..\common\shared.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="driver_comm.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
