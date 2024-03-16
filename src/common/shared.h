@@ -55,11 +55,13 @@ inline bool ConvertStringToInt(const std::string &in, uint32_t &out)
 //
 inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)
 {
+    static const uint8_t maxOctets = 4;
+
     ipOut = 0;
 
     // Tokenize string first
     const std::vector<std::string> tokenized = SplitStringByDelimiter(ip, '.');
-    if (tokenized.size() != 3) {
+    if (tokenized.size() != maxOctets) {
         return false;
     }
 
@@ -71,7 +73,7 @@ inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)
             return false;
         }
 
-        ipOut |= (uint8_t)(out & 0xffffff00) << (i - tokenized.begin());
+        ipOut |= out << (uint8_t)((uint8_t)(i - tokenized.begin()) * 8);
     }
 
     return true;

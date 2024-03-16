@@ -55,4 +55,10 @@ public:
     // Return the raw filter config, which will be transported to the driver
     //
     const USER_DRIVER_FILTER_TRANSPORT_DATA &GetRawFilterData(void) const;
+
+private:
+    //
+    // Parse the internal config into a the usermode to driver transport struct
+    //
+    void genIoctlStruct(void);
 };

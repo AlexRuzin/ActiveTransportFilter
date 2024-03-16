@@ -35,8 +35,19 @@ typedef _ipv4RawAddress                                     *PIPV4_RAW_ADDRESS;
 // Structure to represent the transport buffer which configures ATF.
 //  Configured by the usermode service, through ini, and transported to the ATF driver which will then configure WFP
 //
+#define FILTER_TRANSPORT_MAGIC                              0x3af3bbcc
+
 #pragma pack(push, 1)
 typedef struct _user_driver_filter_transport_data {
+    // Object sanity
+    uint32_t                                                magic;
+    uint16_t                                                size;
+
+    // Layer config
+    uint8_t                                                 enableLayerIpv4TcpInbound;
+    uint8_t                                                 enableLayerIpv4TcpOutbound;
+    uint8_t                                                 enableLayerIpv6TcpInbound;
+    uint8_t                                                 enableLayerIpv6TcpOutbound;
 
     // Blacklist for all IPv6 addresses
     IPV6_RAW_ADDRESS                                        ipv6Blacklist[MAX_IPV4_ADDRESSES_BLACKLIST];

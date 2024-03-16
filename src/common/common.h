@@ -54,7 +54,7 @@
 // Dynamic and filter configuration ini file
 //
 #define GLOBAL_IP_FILTER_INI                MAIN_INSTALL_PATH "\\filter_config.ini"
-#define GLOBAL_IP_FILTER_INI_DEBUG          "..\\config\\filter_config.ini"
+#define GLOBAL_IP_FILTER_INI_DEBUG          "..\\..\\config\\filter_config.ini"
 
 
 //

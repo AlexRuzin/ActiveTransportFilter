@@ -25,7 +25,7 @@ int main(void)
         return atfError;
     }
     
-    LOG_INFO("Found ini config path: %s", targetIniFile);
+    LOG_INFO("Found ini config path: " + targetIniFile);
 
     FilterConfig filterConfig(targetIniFile);
     atfError = filterConfig.ParseIniFile();
