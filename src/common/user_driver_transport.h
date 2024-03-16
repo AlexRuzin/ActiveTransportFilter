@@ -7,24 +7,31 @@
 //  Includes structures, constants, and objects, that can be safely transported to the ATF driver
 //
 
-#include <stdint.h>
-
 //
 // Object to represent an IPv6 address
 //
 #pragma pack(push, 1)
 typedef struct _ipv6RawAddress {
     union {
-        uint8_t                                             address[16];
-        uint64_t                                            part[2];
-    };
+        struct {
+            UINT8                                           byte[16];
+        } b;
+
+        struct {
+            UINT32                                          dword[4];
+        } d;
+
+        struct {
+            UINT64                                          qword[2];
+        } q;
+    } a;
 } IPV6_RAW_ADDRESS, *PIPV6_RAW_ADDRESS;
 #pragma pack(pop)
 
 //
 // Object to represent an IPv4 address
 //
-typedef uint32_t                                            _ipv4RawAddress;
+typedef UINT32                                              _ipv4RawAddress;
 typedef _ipv4RawAddress                                     IPV4_RAW_ADDRESS;
 typedef _ipv4RawAddress                                     *PIPV4_RAW_ADDRESS;
 
@@ -40,14 +47,14 @@ typedef _ipv4RawAddress                                     *PIPV4_RAW_ADDRESS;
 #pragma pack(push, 1)
 typedef struct _user_driver_filter_transport_data {
     // Object sanity
-    uint32_t                                                magic;
-    uint16_t                                                size;
+    UINT32                                                  magic;
+    UINT16                                                  size;
 
     // Layer config
-    uint8_t                                                 enableLayerIpv4TcpInbound;
-    uint8_t                                                 enableLayerIpv4TcpOutbound;
-    uint8_t                                                 enableLayerIpv6TcpInbound;
-    uint8_t                                                 enableLayerIpv6TcpOutbound;
+    UINT8                                                   enableLayerIpv4TcpInbound;
+    UINT8                                                   enableLayerIpv4TcpOutbound;
+    UINT8                                                   enableLayerIpv6TcpInbound;
+    UINT8                                                   enableLayerIpv6TcpOutbound;
 
     // Blacklist for all IPv6 addresses
     IPV6_RAW_ADDRESS                                        ipv6Blacklist[MAX_IPV4_ADDRESSES_BLACKLIST];

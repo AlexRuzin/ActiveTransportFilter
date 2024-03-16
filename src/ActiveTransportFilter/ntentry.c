@@ -2,6 +2,7 @@
 #include <wdf.h>
 
 #include "ntentry.h"
+#include "ioctl.h"
 #include "wfp.h"
 #include "trace.h"
 #include "../common/common.h"
@@ -53,7 +54,8 @@ static VOID AtfInitConfig(
 static NTSTATUS AtfCreateDeviceObject(
     _In_    DRIVER_OBJECT *driverObj,
     _In_    UNICODE_STRING *registryPath,
-    _Out_   DEVICE_OBJECT **deviceObjOut
+    _Out_   DEVICE_OBJECT **deviceObjOut,
+    _Out_   WDFDEVICE *wdfDevice
 );
 
 _Function_class_(DRIVER_INITIALIZE)
@@ -80,16 +82,31 @@ NTSTATUS DriverEntry(
     //
     // Create the driver/device object
     //
+    WDFDEVICE wdfDevice = NULL;
     DEVICE_OBJECT *deviceObject = NULL;
     ntStatus = AtfCreateDeviceObject(
         driverObj,
         registryPath,
-        &deviceObject
+        &deviceObject,
+        &wdfDevice
     );
     if (!NT_SUCCESS(ntStatus) || !deviceObject) {
         ATF_ERROR(AtfCreateDeviceObject, ntStatus);
         return ntStatus;
     }
+
+    //
+    // Initialize usermode IOCTL handler
+    //
+    ntStatus = AtfInitializeIoctlHandlers(
+        wdfDevice
+    );
+    if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(AtfInitializeIoctlHandlers, ntStatus);
+        return ntStatus;
+    }
+
+    ATF_DEBUG(AtfInitializeIoctlHandlers, "Successfully created IOCTL handlers");
 
     //
     // Initialize the WFP subsystem, but do not populate callouts yet
@@ -109,12 +126,14 @@ NTSTATUS DriverEntry(
 static NTSTATUS AtfCreateDeviceObject(
     _In_    DRIVER_OBJECT *driverObj,
     _In_    UNICODE_STRING *registryPath,
-    _Out_   DEVICE_OBJECT **deviceObjOut
+    _Out_   DEVICE_OBJECT **deviceObjOut,
+    _Out_   WDFDEVICE *wdfDevice
 )
 {
     ATF_ASSERT(driverObj);
     ATF_ASSERT(registryPath);
     ATF_ASSERT(deviceObjOut);
+    ATF_ASSERT(wdfDevice);
 
     *deviceObjOut = NULL;
     NTSTATUS ntStatus = -1;
@@ -153,8 +172,7 @@ static NTSTATUS AtfCreateDeviceObject(
         return ntStatus;
     }
 
-    WDFDEVICE wdfDevice = NULL;
-    ntStatus = WdfDeviceCreate(&deviceInit, &atfConfig.wdfObjectAttributes, &wdfDevice);
+    ntStatus = WdfDeviceCreate(&deviceInit, &atfConfig.wdfObjectAttributes, wdfDevice);
     if (!NT_SUCCESS(ntStatus)) {
         ATF_ERROR(WdfDeviceCreate, ntStatus);
         WdfDeviceInitFree(deviceInit);
@@ -169,7 +187,7 @@ static NTSTATUS AtfCreateDeviceObject(
         return ntStatus;
     }
 
-    *deviceObjOut = WdfDeviceWdmGetDeviceObject(wdfDevice);
+    *deviceObjOut = WdfDeviceWdmGetDeviceObject(*wdfDevice);
 
     ATF_DEBUG(AtfInitDevice, "Successfully created device object");
     return STATUS_SUCCESS;

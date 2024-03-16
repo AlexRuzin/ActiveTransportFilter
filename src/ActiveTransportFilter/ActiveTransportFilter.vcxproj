@@ -97,6 +97,7 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="filter.cpp" />
+    <ClCompile Include="ioctl.c" />
     <ClCompile Include="ntentry.c" />
     <ClCompile Include="wfp.c" />
   </ItemGroup>
@@ -104,9 +105,11 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
     <ClInclude Include="..\common\common.h" />
     <ClInclude Include="..\common\default_config.h" />
     <ClInclude Include="..\common\errors.h" />
+    <ClInclude Include="..\common\ioctl_codes.h" />
     <ClInclude Include="..\common\user_driver_transport.h" />
     <ClInclude Include="..\common\user_logging.h" />
     <ClInclude Include="filter.h" />
+    <ClInclude Include="ioctl.h" />
     <ClInclude Include="ntentry.h" />
     <ClInclude Include="trace.h" />
     <ClInclude Include="wfp.h" />

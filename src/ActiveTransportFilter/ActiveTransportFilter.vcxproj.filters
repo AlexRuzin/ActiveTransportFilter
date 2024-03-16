@@ -36,6 +36,9 @@
     <ClCompile Include="filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ioctl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="trace.h">
@@ -63,6 +66,12 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="..\common\errors.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="ioctl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\common\ioctl_codes.h">
       <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>

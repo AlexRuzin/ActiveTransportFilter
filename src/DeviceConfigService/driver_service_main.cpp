@@ -12,6 +12,7 @@
 //
 ATF_ERROR getIniFile(std::string &outPath);
 
+static shared::CRC32SUM lastIniSum = -1;
 
 int main(void)
 {
@@ -34,6 +35,8 @@ int main(void)
         return atfError;
     }
 
+    lastIniSum = shared::Crc32SumFile(targetIniFile);
+    LOG_INFO("Ini CRC32 sum: 0x%08x", lastIniSum);
 
     return 0;
 }
