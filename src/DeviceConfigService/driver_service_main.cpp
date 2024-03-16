@@ -4,6 +4,7 @@
 #include "../common/user_logging.h"
 #include "../common/common.h"
 #include "../common/errors.h"
+#include "../common/shared.h"
 #include "ini_reader.h"
 
 //
@@ -11,7 +12,6 @@
 //
 ATF_ERROR getIniFile(std::string &outPath);
 
-bool isFileAvail(std::string file);
 
 int main(void)
 {
@@ -40,20 +40,13 @@ int main(void)
 
 ATF_ERROR getIniFile(std::string &outPath)
 {
-    if (isFileAvail(GLOBAL_IP_FILTER_INI)) {
+    if (shared::IsFileExists(GLOBAL_IP_FILTER_INI)) {
         outPath = GLOBAL_IP_FILTER_INI;
-    } else if (isFileAvail(GLOBAL_IP_FILTER_INI_DEBUG)) {
+    } else if (shared::IsFileExists(GLOBAL_IP_FILTER_INI_DEBUG)) {
         outPath = GLOBAL_IP_FILTER_INI_DEBUG;
     } else {
         return ATF_ERROR_FILE_NOT_FOUND;
     }
 
     return ATF_ERROR_OK;
-}
-
-bool isFileAvail(std::string file) {
-    DWORD dwAttrib = GetFileAttributes(file.c_str());
-
-    return (bool)(dwAttrib != INVALID_FILE_ATTRIBUTES &&
-        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }

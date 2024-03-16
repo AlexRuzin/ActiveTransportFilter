@@ -12,21 +12,31 @@
 
 class FilterConfig {
 private:
-    typedef struct _filter_config {
-        std::vector<IPV4_RAW_ADDRESS>           blocklistIpv4;
-        std::vector<IPV6_RAW_ADDRESS>           blocklistIpv6;
-    } FILTER_CONFIG, *PFILTER_CONFIG;
+    bool                                        enableLayerIpv4TcpInbound;
+    bool                                        enableLayerIpv4TcpOutbound;
+    bool                                        enableLayerIpv6TcpInbound;
+    bool                                        enableLayerIpv6TcpOutbound;
 
-    FILTER_CONFIG                               iniConfigParsed;
+    std::vector<IPV4_RAW_ADDRESS>               blocklistIpv4;
+    std::vector<IPV6_RAW_ADDRESS>               blocklistIpv6;
+
 
     USER_DRIVER_FILTER_TRANSPORT_DATA           rawTransportData;
 
     const std::string                           iniFilePath;
 
+    INIReader                                   iniReader;
+
 public:
     FilterConfig(std::string &iniFilePath) :
+        enableLayerIpv4TcpInbound(false),
+        enableLayerIpv4TcpOutbound(false),
+        enableLayerIpv6TcpInbound(false),
+        enableLayerIpv6TcpOutbound(false),
+
         iniFilePath(iniFilePath),
-        rawTransportData({ 0 })
+        rawTransportData({ 0 }),
+        iniReader(iniFilePath)
     {
     
     }
