@@ -11,4 +11,7 @@ typedef uint32_t ATF_ERROR;
 #define ATF_CREATE_SERVICE                      0x00000003
 #define ATF_INIT_SCM                            0x00000004
 #define ATF_FAILED_PROC_CREATE                  0x00000005
+#define ATF_FAILED_HANDLE_NOT_OPENED            0x00000006
+#define ATF_BAD_PARAMETERS                      0x00000007
+#define ATF_DEVICEIOCONTROL                     0x00000008
 

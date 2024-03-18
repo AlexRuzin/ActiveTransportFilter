@@ -233,7 +233,7 @@ static VOID AtfInitConfig(
     //config->wdfDriverConfig.EvtDriverDeviceAdd = (PFN_WDF_DRIVER_DEVICE_ADD)AtfEvtWdfDriverDeviceAdd;
     config->wdfDriverConfig.DriverInitFlags |= WdfDriverInitNonPnpDriver;
 
-    RtlInitUnicodeString(&config->deviceName, TEXT(ATF_DEVICE_NAME));
-    RtlInitUnicodeString(&config->dosDeviceName, TEXT(ATF_DOS_DEVICE_NAME));
+    RtlInitUnicodeString(&config->deviceName, L"\\Device\\" TEXT(ATF_DRIVER_NAME));
+    RtlInitUnicodeString(&config->dosDeviceName, L"\\DosDevices\\" TEXT(ATF_DRIVER_NAME));
 }
 

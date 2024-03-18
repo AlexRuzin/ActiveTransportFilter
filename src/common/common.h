@@ -9,10 +9,11 @@
 
 
 //
-// ActiveTransportFilter Driver
+// ActiveTransportFilter Driver name and symbolic links
 //
-#define ATF_DEVICE_NAME                     "\\Device\\atf_filter"
-#define ATF_DOS_DEVICE_NAME                 "\\DosDevices\\atf_filter"
+#define ATF_DRIVER_NAME                     "atf_filter"
+#define ATF_DEVICE_NAME                     "\\Device\\" ATF_DRIVER_NAME
+#define ATF_DOS_DEVICE_NAME                 "\\DosDevices\\" ATF_DRIVER_NAME
 
 #define SDDL_STRING                         "D:P(A;;GA;;;SY)(A;;GA;;;BA)"
 
@@ -50,14 +51,6 @@
 //
 #define MAIN_INSTALL_PATH                   "atf_bin_directory"   
 
-
-//
-// Dynamic and filter configuration ini file
-//
-#define GLOBAL_IP_FILTER_INI                MAIN_INSTALL_PATH "\\filter_config.ini"
-#define GLOBAL_IP_FILTER_INI_DEBUG          "..\\..\\config\\filter_config.ini"
-
-
 //
 // Image names
 //
@@ -66,3 +59,12 @@
 #define FILENAME_DEVICE_CONFIG_SERVICE      "DeviceConfigService.exe"
 #define FILENAME_INTERFACE_CONSOLE          "InterfaceConsole.exe"
 #define FILENAME_CONFIG                     "filter_config.ini"
+
+//
+// Dynamic and filter configuration ini file
+//
+#define GLOBAL_IP_FILTER_INI                FILENAME_CONFIG
+#define GLOBAL_IP_FILTER_INI_DEBUG          "..\\..\\config\\" FILENAME_CONFIG
+#define GLOBAL_IP_FILTER_INI_RUNTIME        ".\\" MAIN_INSTALL_PATH "\\" FILENAME_CONFIG
+
+

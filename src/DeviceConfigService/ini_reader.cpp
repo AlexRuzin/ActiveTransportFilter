@@ -8,6 +8,12 @@
 #include "../common/user_driver_transport.h"
 #include "../common/shared.h"
 
+#include <string>
+#include <vector>
+#include <cstring>
+#include <cstdint>
+
+
 
 ATF_ERROR FilterConfig::ParseIniFile(void)
 {
@@ -60,4 +66,11 @@ void FilterConfig::genIoctlStruct(void)
     for (std::vector<IPV4_RAW_ADDRESS>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
         rawTransportData.ipv4BlackList[i - blocklistIpv4.begin()] = *i;
     }
+}
+
+std::vector<std::byte> FilterConfig::SerializeConfigBuffer(void) const
+{
+    std::vector<std::byte> out(sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+    std::memcpy(out.data(), &this->rawTransportData, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+    return out;
 }

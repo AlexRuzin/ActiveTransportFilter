@@ -38,7 +38,12 @@ ATF_ERROR cleanInstallDirectory(const std::string &path);
 //
 // Entry point
 //
-ATF_ERROR main(int32_t argc, char argv[])
+int CALLBACK WinMain(
+    _In_ HINSTANCE hInstance,
+    _In_ HINSTANCE hPrevInstance,
+    _In_ LPSTR     lpCmdLine,
+    _In_ int       nCmdShow
+)
 {
     LOG_INIT(DRIVER_CTL_NAME, LOG_SOURCE_WINDOWS_DEBUG);
 
@@ -77,7 +82,7 @@ ATF_ERROR main(int32_t argc, char argv[])
 
     LOG_INFO("%s completed operations, closing", DRIVER_CTL_NAME);
 
-    return ATF_ERROR_OK;
+    return 0;
 }
 
 ATF_ERROR cleanInstallDirectory(const std::string &path)

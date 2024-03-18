@@ -8,6 +8,9 @@
 #include "../common/errors.h"
 
 #include <string>
+#include <vector>
+#include <cstring>
+#include <cstdint>
 
 class IoctlComm {
 private:
@@ -26,6 +29,9 @@ public:
 
     ~IoctlComm(void)
     {
+        //
+        // Close device driver handle
+        //
         if (driverHandle != INVALID_HANDLE_VALUE) {
             CloseHandle(driverHandle);
             driverHandle = INVALID_HANDLE_VALUE;
@@ -41,4 +47,14 @@ public:
     // Returns the driver logical device filename
     //
     const std::string &GetLogicalDeviceFileName(void) const;
+
+    //
+    // Send a raw buffer to the device driver
+    //
+    ATF_ERROR SendRawBufferIoctl(std::vector<std::byte> &rawBuffer);
+
+    //
+    // Check if a device symbolic link exists (win32-only), C++ <filesystem> fails here
+    //
+    static ATF_ERROR tryOpenDevicePath(const std::string &in);
 };

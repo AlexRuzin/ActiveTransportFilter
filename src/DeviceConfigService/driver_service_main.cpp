@@ -1,8 +1,5 @@
 #include <Windows.h>
 
-#include <memory>
-#include <string>
-
 #include "driver_service_main.h"
 #include "driver_comm.h"
 #include "../common/user_logging.h"
@@ -10,6 +7,11 @@
 #include "../common/errors.h"
 #include "../common/shared.h"
 #include "ini_reader.h"
+
+#include <string>
+#include <vector>
+#include <cstring>
+#include <cstdint>
 
 //
 // Parse the ini and create the FilterConfig object
@@ -26,20 +28,32 @@ static ATF_ERROR connectToDriver(std::unique_ptr<IoctlComm> &ioctlComm);
 //
 static ATF_ERROR getIniFile(std::string &outPath);
 
+//
+// Use Win32 API to check for the device path. shared::IsFileExists() does not work.
+//
+static ATF_ERROR tryOpenDevicePath(const std::string &in);
+
+
+//
+// Global that stores the checksum for the last ini file read (TODO)
+//
 static shared::CRC32SUM lastIniSum = -1;
 
-int main(void)
+int CALLBACK WinMain(
+    _In_ HINSTANCE hInstance,
+    _In_ HINSTANCE hPrevInstance,
+    _In_ LPSTR     lpCmdLine,
+    _In_ int       nCmdShow
+)
 {
-    Sleep(CONTROL_SERVICE_SLEEP_MS);
-
-    printf("test");
-    Sleep(500);
-
     LOG_INIT(CONTROL_SERVICE_NAME, LOG_SOURCE_WINDOWS_DEBUG);
     LOG_INFO("Starting configuration service %s", CONTROL_SERVICE_NAME);
 
     ATF_ERROR atfError = ATF_ERROR_OK;
 
+    Sleep(500);
+
+    // Parse the ini configuration
     std::unique_ptr<FilterConfig> filterConfig;
     atfError = parseIni(filterConfig);
     if (atfError) {
@@ -47,6 +61,7 @@ int main(void)
         return atfError;
     }
 
+    // Connect to the device driver
     std::unique_ptr<IoctlComm> ioctlComm;
     atfError = connectToDriver(ioctlComm);
     if (atfError) {
@@ -56,8 +71,15 @@ int main(void)
 
     LOG_INFO("Sucessfully connected to driver device: " + ioctlComm->GetLogicalDeviceFileName());
 
-    Sleep(INFINITE);
+    // Transport configuration
+    std::vector<std::byte> rawBuf = filterConfig->SerializeConfigBuffer();
+    atfError = ioctlComm->SendRawBufferIoctl(rawBuf);
+    if (atfError) {
+        LOG_ERROR("Failed to transport configuration buffer: 0x%08x", atfError);
+        return atfError;
+    }
 
+    Sleep(INFINITE);
     return 0;
 }
 
@@ -65,12 +87,17 @@ static ATF_ERROR connectToDriver(std::unique_ptr<IoctlComm> &ioctlComm)
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
+    // We need to append "\\.\" to the device path for CreateFileA() to work
+    std::string fullDeviceName(ATF_DRIVER_NAME);
+    fullDeviceName.insert(0, "\\\\.\\");
+
     // Check if driver device exists
-    if (!shared::IsFileExists(ATF_DEVICE_NAME)) {
-        return ATF_ERROR_FILE_NOT_FOUND;
+    atfError = IoctlComm::tryOpenDevicePath(fullDeviceName);
+    if (atfError) {
+        return atfError;
     }
 
-    ioctlComm = std::make_unique<IoctlComm>(ATF_DEVICE_NAME);
+    ioctlComm = std::make_unique<IoctlComm>(fullDeviceName);
     atfError = ioctlComm->ConnectToDriver();
     if (atfError) {
         return atfError;
@@ -107,6 +134,8 @@ static ATF_ERROR getIniFile(std::string &outPath)
         outPath = GLOBAL_IP_FILTER_INI;
     } else if (shared::IsFileExists(GLOBAL_IP_FILTER_INI_DEBUG)) {
         outPath = GLOBAL_IP_FILTER_INI_DEBUG;
+    } else if (shared::IsFileExists(GLOBAL_IP_FILTER_INI_RUNTIME)) {
+        outPath = GLOBAL_IP_FILTER_INI_RUNTIME;
     } else {
         return ATF_ERROR_FILE_NOT_FOUND;
     }

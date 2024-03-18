@@ -94,10 +94,6 @@ class Logger;
 #define LOG_LEVEL_DEBUG                     4
 #define LOG_LEVEL_DEFAULT_TYPE              LOG_LEVEL_INFO
 
-//
-// Current instance of the logger, only one exists after call to Initialize()
-//
-static std::unique_ptr<Logger>              currentInstance;
 
 //
 // Synchronize user calls
@@ -105,6 +101,13 @@ static std::unique_ptr<Logger>              currentInstance;
 static std::mutex logSync;
 
 class Logger {
+
+    //
+    // Current instance of the logger, only one exists after call to Initialize()
+    //
+    static inline std::unique_ptr<Logger>   currentInstance;
+
+
 public:
     typedef uint8_t LogLevel;
 
@@ -251,7 +254,7 @@ inline void Logger::generatePid(std::ostringstream &ss)
 #endif //_WIN32
 }
 
-void Logger::LogInst(LogLevel level, const std::vector<enum _logging_type_dest> &type, const std::string &s)
+inline void Logger::LogInst(LogLevel level, const std::vector<enum _logging_type_dest> &type, const std::string &s)
 {
     std::ostringstream ss;    
     generateDatetimeString(ss);
@@ -285,7 +288,7 @@ void Logger::LogInst(LogLevel level, const std::vector<enum _logging_type_dest> 
 }
 
 template<typename... Args>
-std::string Logger::formatString(const std::string& format, Args... args) 
+inline std::string Logger::formatString(const std::string& format, Args... args) 
 {
     const int size_s = std::snprintf(nullptr, 0, format.c_str(), args...) + 1; // Extra space for '\0'
     if (size_s <= 0) { 
@@ -297,7 +300,7 @@ std::string Logger::formatString(const std::string& format, Args... args)
     return std::string(buf.get(), buf.get() + size - 1); // We don't want the '\0' inside
 }
 
-void Logger::Initialize(const std::string &moduleName, std::vector<enum _logging_type_dest> types)
+inline void Logger::Initialize(const std::string &moduleName, std::vector<enum _logging_type_dest> types)
 {
     std::lock_guard<std::mutex> lock(logSync);
 
@@ -306,7 +309,7 @@ void Logger::Initialize(const std::string &moduleName, std::vector<enum _logging
     }
 }
 
-void Logger::Initialize(const std::string &moduleName, enum _logging_type_dest loggingType)
+inline void Logger::Initialize(const std::string &moduleName, enum _logging_type_dest loggingType)
 {
     Initialize(moduleName, std::vector<enum _logging_type_dest>{ loggingType });
 }
@@ -317,7 +320,7 @@ inline Logger &Logger::GetInstance(void)
 }
 
 template<typename T>
-Logger &Logger::operator<<(const T &s) {
+inline Logger &Logger::operator<<(const T &s) {
     std::ostringstream os;
     os << s;
     Log(os.str());

@@ -9,6 +9,8 @@
 
 #include <string>
 #include <vector>
+#include <cstring>
+#include <cstdint>
 
 class FilterConfig {
 private:
@@ -50,6 +52,11 @@ public:
     // Parse the INI file and build structures
     //
     ATF_ERROR ParseIniFile(void);
+
+    //
+    // Returns the raw configuration data buffer
+    //
+    std::vector<std::byte> SerializeConfigBuffer(void) const;
 
     //
     // Return the raw filter config, which will be transported to the driver
