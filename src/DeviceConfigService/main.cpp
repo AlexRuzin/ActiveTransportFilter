@@ -1,6 +1,7 @@
 #include <Windows.h>
 
-#include "driver_service_main.h"
+#include "main.h"
+#include "config_service.h"
 #include "driver_comm.h"
 #include "../common/user_logging.h"
 #include "../common/common.h"

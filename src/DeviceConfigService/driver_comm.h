@@ -19,10 +19,13 @@ private:
     // Device handle to driver
     HANDLE                                  driverHandle;
 
+    bool                                    isConnected;
+
 public:
     IoctlComm(std::string driverLogicalPath) :
         driverLogicalDevicePath(driverLogicalPath),
-        driverHandle(INVALID_HANDLE_VALUE)
+        driverHandle(INVALID_HANDLE_VALUE),
+        isConnected(false)
     {
     
     }
@@ -36,6 +39,8 @@ public:
             CloseHandle(driverHandle);
             driverHandle = INVALID_HANDLE_VALUE;
         }
+
+        isConnected = false;
     }
 
     //
@@ -57,4 +62,6 @@ public:
     // Check if a device symbolic link exists (win32-only), C++ <filesystem> fails here
     //
     static ATF_ERROR tryOpenDevicePath(const std::string &in);
+
+    bool GetIsConnected(void) const;
 };

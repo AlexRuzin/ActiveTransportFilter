@@ -169,14 +169,16 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replac
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="config_service.cpp" />
     <ClCompile Include="driver_comm.cpp" />
-    <ClCompile Include="driver_service_main.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="ini_reader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\common\shared.h" />
+    <ClInclude Include="config_service.h" />
     <ClInclude Include="driver_comm.h" />
-    <ClInclude Include="driver_service_main.h" />
+    <ClInclude Include="main.h" />
     <ClInclude Include="ini_reader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

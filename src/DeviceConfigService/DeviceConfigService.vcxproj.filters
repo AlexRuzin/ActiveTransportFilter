@@ -18,7 +18,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="driver_service_main.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ini_reader.cpp">
@@ -27,9 +27,12 @@
     <ClCompile Include="driver_comm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="config_service.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="driver_service_main.h">
+    <ClInclude Include="main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ini_reader.h">
@@ -39,6 +42,9 @@
       <Filter>common</Filter>
     </ClInclude>
     <ClInclude Include="driver_comm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="config_service.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

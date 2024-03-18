@@ -57,7 +57,7 @@ VOID AtfIoDeviceControl(
     UNREFERENCED_PARAMETER(outputBufferLength);
     UNREFERENCED_PARAMETER(queue);
 
-    NTSTATUS ntStatus = STATUS_SUCCESS;
+    NTSTATUS ntStatus = -1;
     
     switch (ioControlCode)
     {

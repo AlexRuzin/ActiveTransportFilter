@@ -30,6 +30,8 @@ ATF_ERROR IoctlComm::ConnectToDriver(void)
         return ATF_ERROR_OPEN_FILE;
     }
 
+
+    isConnected = true;
     return ATF_ERROR_OK;
 }
 
@@ -54,7 +56,7 @@ ATF_ERROR IoctlComm::SendRawBufferIoctl(std::vector<std::byte> &rawBuffer)
         driverHandle,
         IOCTL_ATF_SEND_WFP_CONFIG,
         rawBuffer.data(),
-        rawBuffer.size(),
+        (DWORD)rawBuffer.size(),
         NULL,
         0,
         &bytesReturned,
@@ -84,4 +86,9 @@ ATF_ERROR IoctlComm::tryOpenDevicePath(const std::string &in)
 
     CloseHandle(deviceHandle);
     return ATF_ERROR_OK;
+}
+
+bool IoctlComm::GetIsConnected(void) const
+{
+    return this->isConnected;
 }
