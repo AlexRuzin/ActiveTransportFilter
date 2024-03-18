@@ -7,6 +7,7 @@
 #include "../common/errors.h"
 #include "../common/user_driver_transport.h"
 #include "../common/shared.h"
+#include "../common/user_logging.h"
 
 #include <string>
 #include <vector>
@@ -43,6 +44,9 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
 
     genIoctlStruct();
 
+    lastIniSum = shared::Crc32SumFile(iniFilePath);
+    LOG_INFO("Ini CRC32 sum: 0x%08x", lastIniSum);
+
     return ATF_ERROR_OK;
 }
 
@@ -73,4 +77,15 @@ std::vector<std::byte> FilterConfig::SerializeConfigBuffer(void) const
     std::vector<std::byte> out(sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
     std::memcpy(out.data(), &this->rawTransportData, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
     return out;
+}
+
+bool FilterConfig::IsIniDataInitialized(void) const
+{
+    return (rawTransportData.magic == FILTER_TRANSPORT_MAGIC && 
+        rawTransportData.size == sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+}
+
+void FilterConfig::FlushIniFile(void)
+{
+    ZeroMemory(&rawTransportData, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
 }

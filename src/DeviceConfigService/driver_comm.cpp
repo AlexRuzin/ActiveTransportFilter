@@ -31,7 +31,6 @@ ATF_ERROR IoctlComm::ConnectToDriver(void)
     }
 
 
-    isConnected = true;
     return ATF_ERROR_OK;
 }
 
@@ -40,7 +39,7 @@ const std::string &IoctlComm::GetLogicalDeviceFileName(void) const
     return driverLogicalDevicePath;
 }
 
-ATF_ERROR IoctlComm::SendRawBufferIoctl(std::vector<std::byte> &rawBuffer)
+ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte> &rawBuffer) const
 {
     if (driverHandle == INVALID_HANDLE_VALUE) {
         return ATF_FAILED_HANDLE_NOT_OPENED;
@@ -54,9 +53,34 @@ ATF_ERROR IoctlComm::SendRawBufferIoctl(std::vector<std::byte> &rawBuffer)
 
     if (!DeviceIoControl(
         driverHandle,
-        IOCTL_ATF_SEND_WFP_CONFIG,
+        ioctl,
         rawBuffer.data(),
         (DWORD)rawBuffer.size(),
+        NULL,
+        0,
+        &bytesReturned,
+        NULL
+    )) 
+    {
+        return ATF_DEVICEIOCONTROL;
+    }
+
+    return ATF_ERROR_OK;
+}
+
+ATF_ERROR IoctlComm::SendIoctlNoData(IOCTL_CODE ioctl) const
+{
+    if (driverHandle == INVALID_HANDLE_VALUE) {
+        return ATF_FAILED_HANDLE_NOT_OPENED;
+    }
+
+    DWORD bytesReturned = 0;
+
+    if (!DeviceIoControl(
+        driverHandle,
+        ioctl,
+        NULL,
+        0,
         NULL,
         0,
         &bytesReturned,
@@ -90,5 +114,5 @@ ATF_ERROR IoctlComm::tryOpenDevicePath(const std::string &in)
 
 bool IoctlComm::GetIsConnected(void) const
 {
-    return this->isConnected;
+    return !(driverHandle == INVALID_HANDLE_VALUE);
 }

@@ -9,3 +9,8 @@
 #include "../common/shared.h"
 #include "ini_reader.h"
 
+
+const std::shared_ptr<IoctlComm> &ConfigRefreshService::GetIoctlComm(void) const
+{
+    return ioctlComm;
+}

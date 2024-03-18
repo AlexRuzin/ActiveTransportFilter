@@ -11,21 +11,24 @@
 #include <vector>
 #include <cstring>
 #include <cstdint>
+#include <memory>
+
+//
+// Global typedef for IOCTL control codes
+//
+typedef DWORD IOCTL_CODE, *PIOCTL_CODE;
 
 class IoctlComm {
 private:
-    const std::string                       driverLogicalDevicePath;
+    const std::string                               driverLogicalDevicePath;
     
     // Device handle to driver
-    HANDLE                                  driverHandle;
-
-    bool                                    isConnected;
+    HANDLE                                          driverHandle;
 
 public:
     IoctlComm(std::string driverLogicalPath) :
         driverLogicalDevicePath(driverLogicalPath),
-        driverHandle(INVALID_HANDLE_VALUE),
-        isConnected(false)
+        driverHandle(INVALID_HANDLE_VALUE)
     {
     
     }
@@ -39,8 +42,6 @@ public:
             CloseHandle(driverHandle);
             driverHandle = INVALID_HANDLE_VALUE;
         }
-
-        isConnected = false;
     }
 
     //
@@ -56,7 +57,12 @@ public:
     //
     // Send a raw buffer to the device driver
     //
-    ATF_ERROR SendRawBufferIoctl(std::vector<std::byte> &rawBuffer);
+    ATF_ERROR SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte> &rawBuffer) const;
+
+    //
+    // Send a raw IOCTL, without any input or output buffer
+    //
+    ATF_ERROR SendIoctlNoData(IOCTL_CODE ioctl) const;
 
     //
     // Check if a device symbolic link exists (win32-only), C++ <filesystem> fails here

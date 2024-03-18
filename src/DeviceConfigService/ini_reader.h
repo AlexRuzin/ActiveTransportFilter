@@ -5,6 +5,7 @@
 #include <INIReader.h>
 
 #include "../common/errors.h"
+#include "../common/shared.h"
 #include "../common/user_driver_transport.h"
 
 #include <string>
@@ -14,6 +15,11 @@
 
 class FilterConfig {
 private:
+    //
+    // Global that stores the checksum for the last ini file read (TODO)
+    //
+    static inline shared::CRC32SUM              lastIniSum = -1;
+
     bool                                        enableLayerIpv4TcpInbound;
     bool                                        enableLayerIpv4TcpOutbound;
     bool                                        enableLayerIpv6TcpInbound;
@@ -62,6 +68,16 @@ public:
     // Return the raw filter config, which will be transported to the driver
     //
     const USER_DRIVER_FILTER_TRANSPORT_DATA &GetRawFilterData(void) const;
+
+    //
+    // Returns whether or not the USER_DRIVER_FILTER_TRANSPORT_DATA structure is initialized
+    //
+    bool IsIniDataInitialized(void) const;
+
+    //
+    // Flushes the current ini file
+    //
+    void FlushIniFile(void);
 
 private:
     //

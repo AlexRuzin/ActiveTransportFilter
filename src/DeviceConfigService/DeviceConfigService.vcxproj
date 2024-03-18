@@ -171,6 +171,7 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replac
   <ItemGroup>
     <ClCompile Include="config_service.cpp" />
     <ClCompile Include="driver_comm.cpp" />
+    <ClCompile Include="driver_command.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="ini_reader.cpp" />
   </ItemGroup>
@@ -178,6 +179,7 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\$(TargetName.Replac
     <ClInclude Include="..\common\shared.h" />
     <ClInclude Include="config_service.h" />
     <ClInclude Include="driver_comm.h" />
+    <ClInclude Include="driver_command.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="ini_reader.h" />
   </ItemGroup>

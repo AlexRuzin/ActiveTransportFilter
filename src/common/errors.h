@@ -14,4 +14,7 @@ typedef uint32_t ATF_ERROR;
 #define ATF_FAILED_HANDLE_NOT_OPENED            0x00000006
 #define ATF_BAD_PARAMETERS                      0x00000007
 #define ATF_DEVICEIOCONTROL                     0x00000008
+#define ATF_WFP_NOT_RUNNING                     0x00000009
+#define ATF_WFP_ALREADY_RUNNING                 0x0000000a
+#define ATF_NO_INI_CONFIG                       0x0000000b
 
