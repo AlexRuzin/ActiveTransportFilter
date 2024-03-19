@@ -16,7 +16,7 @@ ATF_ERROR DriverCommand::InitializeDriverComms(void)
     ATF_ERROR atfError = ATF_ERROR_OK;
 
     // We need to append "\\.\" to the device path for CreateFileA() to work
-    const std::string fullDeviceName = deviceFilepath + "\\\\.\\";
+    const std::string fullDeviceName = "\\\\.\\" + deviceFilepath;
 
     // Check if driver device exists
     atfError = IoctlComm::tryOpenDevicePath(fullDeviceName);
@@ -83,10 +83,6 @@ ATF_ERROR DriverCommand::CmdFlushConfig(void) const
 ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfig) const
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
-
-    if (!wfpRunning) {
-        return ATF_WFP_NOT_RUNNING;
-    }
 
     if (!filterConfig.IsIniDataInitialized()) {
         return ATF_NO_INI_CONFIG;

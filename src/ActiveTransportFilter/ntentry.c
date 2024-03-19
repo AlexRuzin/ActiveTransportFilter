@@ -3,8 +3,8 @@
 
 #include "ntentry.h"
 #include "ioctl.h"
-#include "wfp.h"
 #include "trace.h"
+#include "wfp.h"
 #include "../common/common.h"
 
 // Structure for initializing NT entry
@@ -25,6 +25,11 @@ ATF_CONFIG atfConfig = { 0 };
 // Success on DriverEntry()
 //
 static BOOLEAN isWfpRunning = FALSE;
+
+//
+// Main DEVICE_OBJECT pointer -- for only one device
+//
+static DEVICE_OBJECT *gDeviceObj = NULL;
 
 //
 // WDF Callbacks
@@ -83,14 +88,13 @@ NTSTATUS DriverEntry(
     // Create the driver/device object
     //
     WDFDEVICE wdfDevice = NULL;
-    DEVICE_OBJECT *deviceObject = NULL;
     ntStatus = AtfCreateDeviceObject(
         driverObj,
         registryPath,
-        &deviceObject,
+        &gDeviceObj,
         &wdfDevice
     );
-    if (!NT_SUCCESS(ntStatus) || !deviceObject) {
+    if (!NT_SUCCESS(ntStatus) || !gDeviceObj) {
         ATF_ERROR(AtfCreateDeviceObject, ntStatus);
         return ntStatus;
     }
@@ -108,16 +112,9 @@ NTSTATUS DriverEntry(
 
     ATF_DEBUG(AtfInitializeIoctlHandlers, "Successfully created IOCTL handlers");
 
-    //
-    // Initialize the WFP subsystem, but do not populate callouts yet
-    //
-    ntStatus = InitializeWfp(deviceObject);
-    if (!NT_SUCCESS(ntStatus)) {
-        ATF_ERROR(WdfDriverCreate, ntStatus);
-        return ntStatus;
-    }
 
-    ATF_DEBUG(WdfDriverCreate, "Successfully created driver object");
+
+    ATF_DEBUG(WdfDriverCreate, "Successfully created device driver object");
     isWfpRunning = TRUE;
 
     return ntStatus;
@@ -202,7 +199,7 @@ VOID AtfUnloadDriver(
     UNREFERENCED_PARAMETER(driverObj);
 
     if (isWfpRunning) {
-        DestroyWfp();
+        DestroyWfp(gDeviceObj);
     }
 }
 

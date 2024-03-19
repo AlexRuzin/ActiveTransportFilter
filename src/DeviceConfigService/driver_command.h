@@ -29,8 +29,8 @@ private:
     bool                                    wfpRunning;
 
 public:
-    DriverCommand(const std::string &deviceFilePath) :
-        deviceFilepath(deviceFilepath),
+    DriverCommand(const std::string deviceFilePathIn) :
+        deviceFilepath(deviceFilePathIn),
         wfpRunning(false)
     {
     

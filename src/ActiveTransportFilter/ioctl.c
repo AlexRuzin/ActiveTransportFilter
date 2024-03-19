@@ -3,6 +3,7 @@
 
 #include "ioctl.h"
 #include "trace.h"
+#include "wfp.h"
 #include "../common/ioctl_codes.h"
 #include "../common/user_driver_transport.h"
 
@@ -17,12 +18,34 @@ VOID AtfIoDeviceControl(
     _In_ ULONG ioControlCode
 );
 
+//
+// Function handles the start WFP command
+//  IOCTL_ATF_WFP_SERVICE_START
+//
+static NTSTATUS AtfHandleStartWFP(
+    _In_ DEVICE_OBJECT *deviceObj
+);
+
+//
+// Function to handle the WFP stop command
+//  IOCTL_ATF_WFP_SERVICE_STOP
+//
+static NTSTATUS AtfHandleStopWFP(
+    _In_ DEVICE_OBJECT *deviceObj
+);
+
+//
+// Function handles the ini configuration loading
+//  IOCTL_ATF_SEND_WFP_CONFIG
+//
 static NTSTATUS AtfHandleSendWfpConfig(
     _In_ WDFREQUEST request, 
     _In_ size_t bufLen
 );
 
-NTSTATUS AtfInitializeIoctlHandlers(WDFDEVICE wdfDevice)
+NTSTATUS AtfInitializeIoctlHandlers(
+    WDFDEVICE wdfDevice
+)
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
     WDF_IO_QUEUE_CONFIG ioQueueConfig;
@@ -55,13 +78,35 @@ VOID AtfIoDeviceControl(
 )
 {
     UNREFERENCED_PARAMETER(outputBufferLength);
-    UNREFERENCED_PARAMETER(queue);
 
     NTSTATUS ntStatus = -1;
+
+    WDFDEVICE wdfDevice = WdfIoQueueGetDevice(queue);
+    DEVICE_OBJECT *deviceObject = WdfDeviceWdmGetDeviceObject(wdfDevice);
     
     switch (ioControlCode)
     {
     case IOCTL_ATF_SEND_KEEPALIVE:
+        {
+    
+        }
+        break;
+    case IOCTL_ATF_WFP_SERVICE_START:
+        {
+            ntStatus = AtfHandleStartWFP(
+                deviceObject
+            );
+        }
+        break;
+
+    case IOCTL_ATF_WFP_SERVICE_STOP:
+        {
+            ntStatus = AtfHandleStopWFP(
+                deviceObject
+            );
+        }
+        break;
+    case IOCTL_ATF_FLUSH_CONFIG:
         {
     
         }
@@ -87,6 +132,45 @@ VOID AtfIoDeviceControl(
 
     WdfRequestComplete(request, ntStatus);
 }
+
+static NTSTATUS AtfHandleStartWFP(
+    _In_ DEVICE_OBJECT *deviceObj
+)
+{
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    //
+    // Initialize the WFP subsystem, but do not populate callouts yet
+    //
+    ntStatus = InitializeWfp(deviceObj);
+    if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(WdfDriverCreate, ntStatus);
+        return ntStatus;
+    }
+
+    ATF_DEBUG(AtfHandleStartWFP, "Sucessfully started AFP filters");
+    return ntStatus;
+}
+
+static NTSTATUS AtfHandleStopWFP(
+    _In_ DEVICE_OBJECT *deviceObj
+)
+{
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    //
+    // Initialize the WFP subsystem, but do not populate callouts yet
+    //
+    ntStatus = DestroyWfp(deviceObj);
+    if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(WdfDriverCreate, ntStatus);
+        return ntStatus;
+    }
+
+    ATF_DEBUG(AtfHandleStartWFP, "Sucessfully stopped AFP filters");
+    return ntStatus;
+}
+
 
 static NTSTATUS AtfHandleSendWfpConfig(
     _In_ WDFREQUEST request, 
@@ -120,5 +204,6 @@ static NTSTATUS AtfHandleSendWfpConfig(
         ATF_DEBUG(WdfRequestRetrieveInputBuffer, "Returned correct IOCTL magic!");
     }
 
+    ATF_DEBUG(AtfHandleStartWFP, "Sucessfully processed config ini!");
     return ntStatus;
 }

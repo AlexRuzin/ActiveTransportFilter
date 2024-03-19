@@ -5,4 +5,6 @@
 //
 // Initialize the usermode callback handler function through WDF
 //
-NTSTATUS AtfInitializeIoctlHandlers(WDFDEVICE wdfDevice);
+NTSTATUS AtfInitializeIoctlHandlers(
+    WDFDEVICE wdfDevice
+);

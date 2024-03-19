@@ -22,8 +22,8 @@
 // FWPM Engine Registration (filtering engine registered at drive level)
 //
 #define DRIVER_FWPM_SERVICENAME             "atf_filter_service"
-#define DRIVER_FWPM_DISPLAYNAME             L"atf_filter_provider"
-#define DRIVER_FWPM_DESC                    L"ATF Provider Object"
+#define DRIVER_FWPM_DISPLAYNAME             "atf_filter_provider"
+#define DRIVER_FWPM_DESC                    "ATF Provider Object"
 
 
 
@@ -66,5 +66,3 @@
 #define GLOBAL_IP_FILTER_INI                FILENAME_CONFIG
 #define GLOBAL_IP_FILTER_INI_DEBUG          "..\\..\\config\\" FILENAME_CONFIG
 #define GLOBAL_IP_FILTER_INI_RUNTIME        ".\\" MAIN_INSTALL_PATH "\\" FILENAME_CONFIG
-
-
