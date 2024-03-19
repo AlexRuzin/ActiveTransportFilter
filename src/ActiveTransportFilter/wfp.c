@@ -99,7 +99,7 @@ typedef struct _callout_desc_layer {
 // Add a callout to the WFP engine
 //
 static NTSTATUS AtfAddCalloutLayer(
-    const CALLOUT_DESC *calloutDesc
+    const CALLOUT_DESC calloutDesc
 );
 
 const CALLOUT_DESC descList[] = {
@@ -235,7 +235,7 @@ NTSTATUS InitializeWfp(
     atfDevice = deviceObj;
 
     for (UINT8 currLayer = 0; currLayer < ARRAYSIZE(descList); currLayer++) {
-        ntStatus = AtfAddCalloutLayer(&descList[currLayer]);
+        ntStatus = AtfAddCalloutLayer(descList[currLayer]);
         if (!NT_SUCCESS(ntStatus)) {
             ATF_ERROR(AtfAddCalloutLayer, ntStatus);
             return ntStatus;
@@ -247,10 +247,10 @@ NTSTATUS InitializeWfp(
 }
 
 static NTSTATUS AtfAddCalloutLayer(
-    const CALLOUT_DESC *calloutDesc
+    const CALLOUT_DESC calloutDesc
 )
 {
-    if (!calloutDesc || !atfDevice) {
+    if (!atfDevice) {
         return STATUS_APP_INIT_FAILURE;
     }
 
@@ -265,13 +265,16 @@ static NTSTATUS AtfAddCalloutLayer(
         return ntStatus;
     }
 
+    ATF_DEBUGF("Attempting to register layer %ls", calloutDesc.calloutName);
+
     //
     // Callout registration
     //
     FWPS_CALLOUT fwpsCallout = { 0 };
-    fwpsCallout.classifyFn = calloutDesc->callback;
+    fwpsCallout.classifyFn = calloutDesc.callback;
     fwpsCallout.notifyFn = AtfNotifyFunctionHandler;
     fwpsCallout.flowDeleteFn = AtfFlowDeleteFunctionHandler;
+    ExUuidCreate(&fwpsCallout.calloutKey);
 
     UINT32 fwpsCalloutId = 0;
     ntStatus = FwpsCalloutRegister(
@@ -280,19 +283,20 @@ static NTSTATUS AtfAddCalloutLayer(
         &fwpsCalloutId
     );
     if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(FwpsCalloutRegister, ntStatus);
         return ntStatus;
     }
-    ATF_DEBUGF("Registered callout layer %ls", calloutDesc->calloutName);
+    ATF_DEBUGF("Registered callout layer %ls", calloutDesc.calloutName);
 
     //
     // Add a callout object
     //
     FWPM_CALLOUT fwpmCallout = { 0 };
     fwpmCallout.calloutKey = fwpsCallout.calloutKey;
-    fwpmCallout.displayData.name = (wchar_t *)calloutDesc->calloutName;
-    fwpmCallout.displayData.description = (wchar_t *)calloutDesc->callback;
+    fwpmCallout.displayData.name = (wchar_t *)calloutDesc.calloutName;
+    fwpmCallout.displayData.description = (wchar_t *)calloutDesc.callback;
     fwpmCallout.providerKey = (GUID*)&ATF_FWPM_PROVIDER_KEY;
-    fwpmCallout.applicableLayer = *calloutDesc->guid;
+    fwpmCallout.applicableLayer = *calloutDesc.guid;
 
     UINT32 fwpmCalloutId = 0;
     ntStatus = FwpmCalloutAdd(
@@ -302,17 +306,18 @@ static NTSTATUS AtfAddCalloutLayer(
         &fwpmCalloutId
     );
     if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(FwpmCalloutAdd, ntStatus);
         return ntStatus;
     }
-    ATF_DEBUGF("Added callout to layer %ls", calloutDesc->calloutName);
+    ATF_DEBUGF("Added callout to layer %ls", calloutDesc.calloutName);
 
     //
     // Add a filter key
     //
     FWPM_FILTER fwpmFilter = { 0 };
-    fwpmFilter.displayData.name = (wchar_t *)calloutDesc->filterName;
-    fwpmFilter.displayData.description = (wchar_t *)calloutDesc->filterDesc;
-    fwpmFilter.layerKey = *calloutDesc->guid;
+    fwpmFilter.displayData.name = (wchar_t *)calloutDesc.filterName;
+    fwpmFilter.displayData.description = (wchar_t *)calloutDesc.filterDesc;
+    fwpmFilter.layerKey = *calloutDesc.guid;
     fwpmFilter.action.type = FWP_ACTION_CALLOUT_UNKNOWN;
     fwpmFilter.action.calloutKey = fwpmCallout.calloutKey;
 
@@ -324,12 +329,14 @@ static NTSTATUS AtfAddCalloutLayer(
         &fwpmFilterId
     );
     if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(FwpmFilterAdd, ntStatus);
         return ntStatus;
     }
-    ATF_DEBUGF("Added filter to layer %ls", calloutDesc->filterName);
+    ATF_DEBUGF("Added filter to layer %ls", calloutDesc.filterName);
 
     ntStatus = FwpmTransactionCommit(kmfeHandle);
     if (!NT_SUCCESS(ntStatus)) {
+        ATF_ERROR(FwpmTransactionCommit, ntStatus);
         return ntStatus;
     }
 
