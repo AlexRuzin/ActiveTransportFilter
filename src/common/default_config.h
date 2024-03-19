@@ -28,8 +28,3 @@ DEFINE_GUID(
 
 EXTERN_C_END
 
-typedef struct _callout_element {
-    wchar_t         *calloutName;
-    wchar_t         *calloutDesc;
-    GUID            *calloutGuid;
-} CALLOUT_ELEMENT, *PCALLOUT_ELEMENT;

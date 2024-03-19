@@ -24,6 +24,7 @@ private:
     bool                                        enableLayerIpv4TcpOutbound;
     bool                                        enableLayerIpv6TcpInbound;
     bool                                        enableLayerIpv6TcpOutbound;
+    bool                                        enableLayerIcmpv4;
 
     std::vector<IPV4_RAW_ADDRESS>               blocklistIpv4;
     std::vector<IPV6_RAW_ADDRESS>               blocklistIpv6;
@@ -41,6 +42,7 @@ public:
         enableLayerIpv4TcpOutbound(false),
         enableLayerIpv6TcpInbound(false),
         enableLayerIpv6TcpOutbound(false),
+        enableLayerIcmpv4(false),
 
         iniFilePath(iniFilePath),
         rawTransportData({ 0 }),

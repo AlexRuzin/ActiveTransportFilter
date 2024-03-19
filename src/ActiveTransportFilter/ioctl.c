@@ -43,11 +43,20 @@ static NTSTATUS AtfHandleSendWfpConfig(
     _In_ size_t bufLen
 );
 
+//
+// Lock that handles synchronization between IOCTL calls
+//
+KSPIN_LOCK gIoctlLock;
+
 NTSTATUS AtfInitializeIoctlHandlers(
     WDFDEVICE wdfDevice
 )
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    // Initialize IOCTL lock
+    KeInitializeSpinLock(&gIoctlLock);
+
     WDF_IO_QUEUE_CONFIG ioQueueConfig;
     WDFQUEUE wdfQueue;
 
@@ -79,10 +88,15 @@ VOID AtfIoDeviceControl(
 {
     UNREFERENCED_PARAMETER(outputBufferLength);
 
-    NTSTATUS ntStatus = -1;
+    KIRQL oldIrql;
+    KeAcquireSpinLock(&gIoctlLock, &oldIrql);
+
+    NTSTATUS ntStatus = STATUS_SUCCESS;
 
     WDFDEVICE wdfDevice = WdfIoQueueGetDevice(queue);
     DEVICE_OBJECT *deviceObject = WdfDeviceWdmGetDeviceObject(wdfDevice);
+
+    ATF_DEBUGD(AtfIoDeviceControl, ioControlCode);
     
     switch (ioControlCode)
     {
@@ -130,6 +144,8 @@ VOID AtfIoDeviceControl(
         ATF_DEBUG(AtfIoDeviceControl, "IOCTL Successfully processed");
     }
 
+    KeReleaseSpinLock(&gIoctlLock, oldIrql);
+
     WdfRequestComplete(request, ntStatus);
 }
 
@@ -159,7 +175,7 @@ static NTSTATUS AtfHandleStopWFP(
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
     //
-    // Initialize the WFP subsystem, but do not populate callouts yet
+    // Remove all callouts and filters
     //
     ntStatus = DestroyWfp(deviceObj);
     if (!NT_SUCCESS(ntStatus)) {
@@ -187,20 +203,19 @@ static NTSTATUS AtfHandleSendWfpConfig(
         return STATUS_BUFFER_TOO_SMALL;
     }
 
-    USER_DRIVER_FILTER_TRANSPORT_DATA data;
-    RtlZeroMemory(&data, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+    USER_DRIVER_FILTER_TRANSPORT_DATA *data = NULL;
 
     ntStatus = WdfRequestRetrieveInputBuffer(
         request,
         sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA),
-        (VOID *)&data,
+        (PVOID *)&data,
         NULL
     );
     if (!NT_SUCCESS(ntStatus)) {
         return ntStatus;
     }
 
-    if (data.magic == FILTER_TRANSPORT_MAGIC && data.size == sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
+    if (data->magic != FILTER_TRANSPORT_MAGIC || data->size != sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
         ATF_DEBUG(WdfRequestRetrieveInputBuffer, "Returned correct IOCTL magic!");
     }
 

@@ -56,6 +56,7 @@ typedef struct _user_driver_filter_transport_data {
     UINT8                                                   enableLayerIpv4TcpOutbound;
     UINT8                                                   enableLayerIpv6TcpInbound;
     UINT8                                                   enableLayerIpv6TcpOutbound;
+    UINT8                                                   enableLayerIcmpv4;
 
     // Blacklist for all IPv6 addresses
     IPV6_RAW_ADDRESS                                        ipv6Blacklist[MAX_IPV4_ADDRESSES_BLACKLIST];

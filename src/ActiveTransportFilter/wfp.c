@@ -169,7 +169,39 @@ const CALLOUT_DESC descList[] = {
     }
 };
 
+//
+// Structure that contains the callout, filter and layer object
+//  Used for maintaining and uninitializing the layers at shutdown (or modifying them)
+//
+#define CALLOUT_LAYER_DATA_MAGIC            0x45132341
+#pragma pack(push, 1)
+typedef struct _callout_layer_descriptor {
+    // Indicates an initialized struct. Must be equal to CALLOUT_LAYER_DATA_MAGIC
+    //  Note: these objects are stored in the global stack
+    UINT32                                  magic;
 
+    // Is the layer active/enabled from the usermode config?
+    BOOL                                    isLayerActive;
+
+    // Layer descriptor
+    CALLOUT_DESC                            *desc; // Does not need to be freed -- is const struct descList
+
+    // WFP filter and callout IDs
+    UINT64                                  fwpmFilterId;
+    UINT32                                  fwpsCalloutId;
+    UINT32                                  fwpmCalloutId;
+} CALLOUT_LAYER_DESCRIPTOR, *PCALLOUT_LAYER_DESCRIPTOR;
+#pragma pack(pop)
+
+//
+// Layer descriptors (see fwpmk.h for layer descriptors)
+//
+#define MAX_CALLOUT_LAYER_DATA              256 // We will never need more than 256 layer descriptors
+static CALLOUT_LAYER_DESCRIPTOR calloutData[MAX_CALLOUT_LAYER_DATA];
+
+//
+// Handles to WFP
+//
 static HANDLE kmfeHandle = 0; //Kernel Mode Filter Engine (KMFE)
 static DEVICE_OBJECT *atfDevice = NULL;
 
@@ -177,10 +209,19 @@ NTSTATUS InitializeWfp(
     _In_ DEVICE_OBJECT *deviceObj 
 )
 {
+    DbgBreakPoint();
     ATF_ASSERT(deviceObj);
 
-    ATF_DEBUG(InitializeWfp, "Entering...");
-    NTSTATUS ntStatus = -1;
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    if (kmfeHandle) {
+        ATF_DEBUG(InitializeWfp, "WFP already initialized!");
+        return ntStatus;
+    }
+
+    ATF_DEBUG(InitializeWfp, "Starting WFP...");    
+
+    RtlZeroMemory(&calloutData, MAX_CALLOUT_LAYER_DATA * sizeof(CALLOUT_LAYER_DESCRIPTOR));
 
     FWPM_PROVIDER fwpmProvider = { 0 };
 
@@ -234,6 +275,8 @@ NTSTATUS InitializeWfp(
 
     atfDevice = deviceObj;
 
+    DbgBreakPoint();
+
     for (UINT8 currLayer = 0; currLayer < ARRAYSIZE(descList); currLayer++) {
         ntStatus = AtfAddCalloutLayer(&descList[currLayer]);
         if (!NT_SUCCESS(ntStatus)) {
@@ -255,10 +298,6 @@ static NTSTATUS AtfAddCalloutLayer(
     }
 
     NTSTATUS ntStatus = STATUS_SUCCESS;
-
-    if (!kmfeHandle) {
-        return STATUS_APP_INIT_FAILURE;
-    }
 
     ntStatus = FwpmTransactionBegin(kmfeHandle, 0);
     if (!NT_SUCCESS(ntStatus)) {
@@ -335,8 +374,20 @@ static NTSTATUS AtfAddCalloutLayer(
         return ntStatus;
     }
 
-    ATF_DEBUGD(FwpmTransactionCommit, fwpmCalloutId);
+    //
+    // Commit layer IDs to calloutData
+    //
+    CALLOUT_LAYER_DESCRIPTOR *descPtr = calloutData;
+    while (descPtr->magic != CALLOUT_LAYER_DATA_MAGIC) descPtr++;
 
+    descPtr->magic = CALLOUT_LAYER_DATA_MAGIC;
+    descPtr->isLayerActive = TRUE;
+    descPtr->desc = (CALLOUT_DESC *)calloutDesc;
+    descPtr->fwpsCalloutId = fwpsCalloutId;
+    descPtr->fwpmCalloutId = fwpmCalloutId;
+    descPtr->fwpmFilterId = fwpmFilterId;
+
+    ATF_DEBUGD(FwpmTransactionCommit, fwpmCalloutId);
 
     //TODO implement proper cleanup: FwpmTransactionAbort
     return ntStatus;
@@ -348,9 +399,55 @@ NTSTATUS DestroyWfp(
 {
     UNREFERENCED_PARAMETER(deviceObject);
 
-    FwpmTransactionCommit(kmfeHandle);
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    if (!atfDevice || !kmfeHandle) {
+        return ntStatus;
+    }
+
+    //
+    // Iterate through calloutData and destroy each layer
+    //
+    CALLOUT_LAYER_DESCRIPTOR *layerDesc = calloutData;
+    while (layerDesc->magic != CALLOUT_LAYER_DATA_MAGIC) {
+        ntStatus = FwpmFilterDeleteById(
+            kmfeHandle,
+            layerDesc->fwpmFilterId
+        );
+        if (!NT_SUCCESS(ntStatus)) {
+            return ntStatus;
+        }
+
+        ntStatus = FwpmCalloutDeleteById(
+            kmfeHandle,
+            layerDesc->fwpmCalloutId
+        );
+        if (!NT_SUCCESS(ntStatus)) {
+            return ntStatus;
+        }
+
+        ntStatus = FwpsCalloutUnregisterById(
+            layerDesc->fwpsCalloutId
+        );
+        if (!NT_SUCCESS(ntStatus)) {
+            return ntStatus;
+        }
+
+        ATF_DEBUG(FwpsCalloutUnregisterById, "Successfully deleted callout layer");
+
+        layerDesc++;
+    }
+
+    ntStatus = FwpmTransactionCommit(kmfeHandle);
+    if (!NT_SUCCESS(ntStatus)) {
+        return ntStatus;
+    }
+
     FwpmProviderDeleteByKey(kmfeHandle, &ATF_FWPM_PROVIDER_KEY);
     FwpmEngineClose(kmfeHandle);
+
+    // Cleanup
+    RtlZeroMemory(calloutData, MAX_CALLOUT_LAYER_DATA * sizeof(CALLOUT_LAYER_DESCRIPTOR));
 
     return STATUS_SUCCESS;
 }

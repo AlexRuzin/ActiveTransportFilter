@@ -54,7 +54,7 @@ ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte>
     if (!DeviceIoControl(
         driverHandle,
         ioctl,
-        rawBuffer.data(),
+        static_cast<void *>(rawBuffer.data()),
         (DWORD)rawBuffer.size(),
         NULL,
         0,

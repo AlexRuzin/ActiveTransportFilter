@@ -27,6 +27,7 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
     enableLayerIpv4TcpOutbound = iniReader.GetBoolean("wfp_layer", "enable_layer_inbound_tcp_v6", false);
     enableLayerIpv6TcpInbound = iniReader.GetBoolean("wfp_layer", "enable_layer_outbound_tcp_v4", false);
     enableLayerIpv6TcpOutbound = iniReader.GetBoolean("wfp_layer", "enable_layer_outbound_tcp_v6", false);
+    enableLayerIcmpv4 = iniReader.GetBoolean("wfp_layer", "enableLayerIcmpv4", false);
 
     const std::string ipv4Blacklist = iniReader.Get("blacklist_ipv4", "ipv4_list", unknownVal);
     const std::string ipv6Blacklist = iniReader.Get("blacklist_ipv6", "ipv6_list", unknownVal);
@@ -66,6 +67,7 @@ void FilterConfig::genIoctlStruct(void)
     rawTransportData.enableLayerIpv4TcpOutbound = enableLayerIpv4TcpOutbound;
     rawTransportData.enableLayerIpv6TcpInbound = enableLayerIpv6TcpInbound;
     rawTransportData.enableLayerIpv6TcpOutbound = enableLayerIpv6TcpOutbound;
+    rawTransportData.enableLayerIcmpv4 = enableLayerIcmpv4;
 
     for (std::vector<IPV4_RAW_ADDRESS>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
         rawTransportData.ipv4BlackList[i - blocklistIpv4.begin()] = *i;

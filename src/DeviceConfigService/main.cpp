@@ -65,6 +65,13 @@ int CALLBACK WinMain(
         return atfError;
     }
 
+    Sleep(10000);
+    atfError = driverCommand.CmdStopWfp();
+    if (atfError) {
+        LOG_ERROR("Failed to start WFP 0x%08x", atfError);
+        return atfError;
+    }
+
     #if 0
     ConfigRefreshService refreshService;
 
