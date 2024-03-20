@@ -153,8 +153,9 @@ const CALLOUT_DESC descList[] = {
         L"ATF Filter Transport ipv6 Outbound",
 
         AtfClassifyFuncTcpV6
-    },
+    }
 
+#if 0
     // ICMP Original Type
     {
         &FWPM_CONDITION_ORIGINAL_ICMP_TYPE,
@@ -167,6 +168,7 @@ const CALLOUT_DESC descList[] = {
 
         AtfClassifyFuncIcmp
     }
+#endif
 };
 
 //
@@ -209,14 +211,17 @@ NTSTATUS InitializeWfp(
     _In_ DEVICE_OBJECT *deviceObj 
 )
 {
-    DbgBreakPoint();
     ATF_ASSERT(deviceObj);
 
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
     if (kmfeHandle) {
-        ATF_DEBUG(InitializeWfp, "WFP already initialized!");
-        return ntStatus;
+        return STATUS_ALREADY_INITIALIZED;
+    }
+
+    // WFP initialization must be at PASSIVE_LEVEL
+    if (KeGetCurrentIrql() != PASSIVE_LEVEL) {
+        return STATUS_INVALID_DEVICE_STATE;
     }
 
     ATF_DEBUG(InitializeWfp, "Starting WFP...");    
@@ -274,8 +279,6 @@ NTSTATUS InitializeWfp(
     }
 
     atfDevice = deviceObj;
-
-    DbgBreakPoint();
 
     for (UINT8 currLayer = 0; currLayer < ARRAYSIZE(descList); currLayer++) {
         ntStatus = AtfAddCalloutLayer(&descList[currLayer]);
@@ -378,7 +381,7 @@ static NTSTATUS AtfAddCalloutLayer(
     // Commit layer IDs to calloutData
     //
     CALLOUT_LAYER_DESCRIPTOR *descPtr = calloutData;
-    while (descPtr->magic != CALLOUT_LAYER_DATA_MAGIC) descPtr++;
+    while (descPtr->magic == CALLOUT_LAYER_DATA_MAGIC) descPtr++;
 
     descPtr->magic = CALLOUT_LAYER_DATA_MAGIC;
     descPtr->isLayerActive = TRUE;
@@ -402,7 +405,14 @@ NTSTATUS DestroyWfp(
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
     if (!atfDevice || !kmfeHandle) {
-        return ntStatus;
+        return STATUS_UNSUCCESSFUL;
+    }
+
+    //DbgBreakPoint();
+
+    // WFP initialization must be at PASSIVE_LEVEL
+    if (KeGetCurrentIrql() != PASSIVE_LEVEL) {
+        return STATUS_INVALID_DEVICE_STATE;
     }
 
     //

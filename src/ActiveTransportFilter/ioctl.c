@@ -46,7 +46,7 @@ static NTSTATUS AtfHandleSendWfpConfig(
 //
 // Lock that handles synchronization between IOCTL calls
 //
-KSPIN_LOCK gIoctlLock;
+KMUTEX gIoctlLock;
 
 NTSTATUS AtfInitializeIoctlHandlers(
     WDFDEVICE wdfDevice
@@ -54,8 +54,7 @@ NTSTATUS AtfInitializeIoctlHandlers(
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
-    // Initialize IOCTL lock
-    KeInitializeSpinLock(&gIoctlLock);
+    KeInitializeMutex(&gIoctlLock, 0);
 
     WDF_IO_QUEUE_CONFIG ioQueueConfig;
     WDFQUEUE wdfQueue;
@@ -88,8 +87,7 @@ VOID AtfIoDeviceControl(
 {
     UNREFERENCED_PARAMETER(outputBufferLength);
 
-    KIRQL oldIrql;
-    KeAcquireSpinLock(&gIoctlLock, &oldIrql);
+    KeWaitForSingleObject(&gIoctlLock, Executive, KernelMode, FALSE, NULL);
 
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
@@ -144,7 +142,7 @@ VOID AtfIoDeviceControl(
         ATF_DEBUG(AtfIoDeviceControl, "IOCTL Successfully processed");
     }
 
-    KeReleaseSpinLock(&gIoctlLock, oldIrql);
+    KeReleaseMutex(&gIoctlLock, FALSE);
 
     WdfRequestComplete(request, ntStatus);
 }
