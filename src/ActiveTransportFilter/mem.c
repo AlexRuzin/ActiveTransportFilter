@@ -20,6 +20,8 @@ VOID *AtfMallocNP(SIZE_T size)
         return NULL;
     }
 
+    RtlZeroMemory(ptr, size);
+
     return ptr;
 }
 
@@ -49,6 +51,8 @@ VOID *AtfMallocPP(SIZE_T size)
         ATF_ERROR(AtfMallocNP, -1);
         return NULL;
     }
+
+    RtlZeroMemory(ptr, size);
 
     return ptr;
 }

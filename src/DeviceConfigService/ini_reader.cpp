@@ -35,6 +35,10 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
     if (ipv4Blacklist != unknownVal) {
         const std::vector<std::string> out = shared::SplitStringByDelimiter(ipv4Blacklist, standardDelimiter);
 
+        if (out.size() > MAX_IPV4_ADDRESSES_BLACKLIST) {
+            return ATF_DEFAULT_CONFIG_TOO_LARGE;
+        }
+
         for (std::vector<std::string>::const_iterator i = out.begin(); i != out.end(); i++) {
             uint32_t out = 0;
             if (shared::ParseStringToIpv4(*i, out)) {
@@ -69,6 +73,7 @@ void FilterConfig::genIoctlStruct(void)
     rawTransportData.enableLayerIpv6TcpOutbound = enableLayerIpv6TcpOutbound;
     rawTransportData.enableLayerIcmpv4 = enableLayerIcmpv4;
 
+    rawTransportData.numOfIpv4Addresses = (UINT16)blocklistIpv4.size();
     for (std::vector<IPV4_RAW_ADDRESS>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
         rawTransportData.ipv4BlackList[i - blocklistIpv4.begin()] = *i;
     }

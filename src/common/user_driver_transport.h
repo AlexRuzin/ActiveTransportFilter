@@ -59,9 +59,14 @@ typedef struct _user_driver_filter_transport_data {
     UINT8                                                   enableLayerIcmpv4;
 
     // Blacklist for all IPv6 addresses
+    //  Note: the default config (ini) will only contain the manually entered addresses, so it will
+    //  never exceeed MAX_IPV4_ADDRESSES_BLACKLIST
+    // Additional blacklist addresses can be appeneded with a separate command
+    UINT16                                                  numOfIpv6Addresses;
     IPV6_RAW_ADDRESS                                        ipv6Blacklist[MAX_IPV4_ADDRESSES_BLACKLIST];
 
     // Blacklist for all IPv4 addresses
+    UINT16                                                  numOfIpv4Addresses;
     IPV4_RAW_ADDRESS                                        ipv4BlackList[MAX_IPV6_ADDRESSES_BLACKLIST];
 } USER_DRIVER_FILTER_TRANSPORT_DATA, *PUSER_DRIVER_FILTER_TRANSPORT_DATA;
 #pragma pack(pop)

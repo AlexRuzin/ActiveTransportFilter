@@ -5,7 +5,6 @@
 #include "trace.h"
 #include "wfp.h"
 #include "config.h"
-#include "mem.h"
 #include "../common/errors.h"
 #include "../common/ioctl_codes.h"
 #include "../common/user_driver_transport.h"
@@ -201,7 +200,6 @@ static NTSTATUS AtfHandleStopWFP(
     return ntStatus;
 }
 
-
 static NTSTATUS AtfHandleSendWfpConfig(
     _In_ WDFREQUEST request, 
     _In_ size_t bufLen
@@ -229,13 +227,15 @@ static NTSTATUS AtfHandleSendWfpConfig(
         return ntStatus;
     }
 
-    if (data->magic != FILTER_TRANSPORT_MAGIC || data->size != sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
-        ATF_DEBUG(WdfRequestRetrieveInputBuffer, "Returned correct IOCTL magic!");
-    }
-
-    VOID *p = ATF_MALLOC(128);
-    if (!p) {
-        p = NULL;
+    //
+    // Parse the default ini config into a CONFIG_CTX object
+    //  This function will also validate the user input
+    //
+    CONFIG_CTX *configCtx = NULL;
+    ATF_ERROR atfError = AtfAllocDefaultConfig(data, &configCtx);
+    if (atfError) {
+        ATF_ERROR(AtfAllocDefaultConfig, atfError);
+        return STATUS_BAD_DATA; 
     }
 
     ATF_DEBUG(AtfHandleStartWFP, "Sucessfully processed config ini!");

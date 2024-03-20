@@ -66,3 +66,9 @@
 #define GLOBAL_IP_FILTER_INI                FILENAME_CONFIG
 #define GLOBAL_IP_FILTER_INI_DEBUG          "..\\..\\config\\" FILENAME_CONFIG
 #define GLOBAL_IP_FILTER_INI_RUNTIME        ".\\" MAIN_INSTALL_PATH "\\" FILENAME_CONFIG
+
+//
+// Maximum number of blacklist addresses
+//
+#define GLOBAL_MAX_IPV4_ADDRESSES           65536 // 2^16
+#define GLOBAL_MAX_IPV6_ADDRESSES           16384 // 2^16
