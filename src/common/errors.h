@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>
+//#include <stdint.h>
 
-typedef uint32_t ATF_ERROR;
+typedef unsigned int ATF_ERROR;
 
 #define ATF_ERROR_OK                            0x00000000
 #define ATF_ERROR_FAIL                          0xffffffff
@@ -18,3 +18,10 @@ typedef uint32_t ATF_ERROR;
 #define ATF_WFP_ALREADY_RUNNING                 0x0000000a
 #define ATF_NO_INI_CONFIG                       0x0000000b
 
+//
+// Driver ERRORS
+//
+#define ATF_PARSE_INI_CONFIG                    0x10000001
+
+
+// EOF

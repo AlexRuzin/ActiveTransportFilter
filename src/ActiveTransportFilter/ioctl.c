@@ -4,6 +4,9 @@
 #include "ioctl.h"
 #include "trace.h"
 #include "wfp.h"
+#include "config.h"
+#include "mem.h"
+#include "../common/errors.h"
 #include "../common/ioctl_codes.h"
 #include "../common/user_driver_transport.h"
 
@@ -87,6 +90,19 @@ VOID AtfIoDeviceControl(
 {
     UNREFERENCED_PARAMETER(outputBufferLength);
 
+    //
+    // Dev note: using a KMUTEX since it does not change IRQL from PASSIVE_LEVEL
+    //  Initially, I used a spinlock but this caused FwpmEngineOpen() to fail since spinlocks
+    //  raise the IRQL to APC_LEVEL when acquired, and WFP initialization requries PASSIVE_LEVEL
+    // 
+    // The reason for this is that a spinlock forces the thread to be raised to APC_LEVEL so it
+    //  is not interrupted by PASSIVE_LEVEL threads. The scheduler itself runs at DISPATCH_LEVEL
+    //  so it cannot be interrupted by anything below that IRQL, but it does manage all APC_LEVEL
+    //  and PASSIVE_LEVEL context switches.
+    // 
+    // The higher the IRQL of a thread the less likely a thread is to be interrupted. So the 
+    //  higher the IRQL the higher the priority (for example hardware devices need high IRQL). 
+    //
     KeWaitForSingleObject(&gIoctlLock, Executive, KernelMode, FALSE, NULL);
 
     NTSTATUS ntStatus = STATUS_SUCCESS;
@@ -215,6 +231,11 @@ static NTSTATUS AtfHandleSendWfpConfig(
 
     if (data->magic != FILTER_TRANSPORT_MAGIC || data->size != sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
         ATF_DEBUG(WdfRequestRetrieveInputBuffer, "Returned correct IOCTL magic!");
+    }
+
+    VOID *p = ATF_MALLOC(128);
+    if (!p) {
+        p = NULL;
     }
 
     ATF_DEBUG(AtfHandleStartWFP, "Sucessfully processed config ini!");

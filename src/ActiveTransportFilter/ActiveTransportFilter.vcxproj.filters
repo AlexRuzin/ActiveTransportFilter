@@ -33,10 +33,16 @@
     <ClCompile Include="wfp.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="filter.cpp">
+    <ClCompile Include="ioctl.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ioctl.c">
+    <ClCompile Include="config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="filter.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="mem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -73,6 +79,12 @@
     </ClInclude>
     <ClInclude Include="..\common\ioctl_codes.h">
       <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
