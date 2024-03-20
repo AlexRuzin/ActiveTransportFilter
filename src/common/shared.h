@@ -41,15 +41,39 @@ inline std::vector<std::string> SplitStringByDelimiter(const std::string str, ch
 }
 
 //
-// Convert a string to int, and return if it is valid or not
+// Convert a string to int, and return false if it is valid or not
 //  Returns true if string
 //
 inline bool ConvertStringToInt(const std::string &in, uint32_t &out)
 {
-    std::istringstream iss(in);
-    iss >> out;
+    if (in.size() == 0) {
+        return false;
+    }
 
+    std::istringstream iss(in);
+    iss >> out; // Try to convert to int
+
+    // If int conversion fails, return false
     return iss.eof() && !iss.fail();
+}
+
+//
+// Get the number of times a character occurs in a string
+//
+inline uint32_t GetNumberOfCharsInStr(const std::string &s, const char &c)
+{
+    if (s.size() == 0) {
+        return 0;
+    }
+
+    uint32_t charCount = 0;
+    for (uint32_t i = 0; i < s.size(); i++) {
+        if (s[i] == c) {
+            charCount++;
+        }
+    }
+
+    return charCount;
 }
 
 //
@@ -62,6 +86,18 @@ inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)
 
     ipOut = 0;
 
+    // The string must be within 
+    static const std::string minIpStr("0.0.0.0");
+    static const std::string maxIpStr("127.127.127.127");
+    if (ip.size() < minIpStr.size() || ip.size() > maxIpStr.size()) { 
+        return false;
+    }
+
+    // There must be three dots in an IP
+    if (GetNumberOfCharsInStr(ip, '.') > 3) {
+        return false;
+    }
+
     // Tokenize string first
     const std::vector<std::string> tokenized = SplitStringByDelimiter(ip, '.');
     if (tokenized.size() != maxOctets) {
@@ -69,6 +105,11 @@ inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)
     }
 
     for (std::vector<std::string>::const_iterator i = tokenized.begin(); i != tokenized.end(); i++) {
+        // The element must have 1-3 characters
+        if (i->size() == 0 || i->size() > 3) {
+            return false;
+        }
+
         uint32_t out = -1;
 
         // String must be an int, and only a single byte

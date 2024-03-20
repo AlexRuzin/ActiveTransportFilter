@@ -9,6 +9,7 @@
 // Represents the entire filter configuration context
 //  A pointer to this object is returned by AtfAllocDefaultConfig, when the usermode supplies
 //  a USER_DRIVER_FILTER_TRANSPORT_DATA structure through IOCTL.
+// 
 //
 #pragma pack(push, 1)
 typedef struct _config_ctx {

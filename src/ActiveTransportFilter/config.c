@@ -12,6 +12,9 @@
 //
 static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *data);
 
+//
+// Create the default config
+//
 ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, CONFIG_CTX **cfgCtx)
 {
     if (!cfgCtx) {
