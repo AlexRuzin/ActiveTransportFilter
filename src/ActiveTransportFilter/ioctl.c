@@ -5,6 +5,7 @@
 #include "trace.h"
 #include "wfp.h"
 #include "config.h"
+#include "filter.h"
 #include "../common/errors.h"
 #include "../common/ioctl_codes.h"
 #include "../common/user_driver_transport.h"
@@ -237,6 +238,13 @@ static NTSTATUS AtfHandleSendWfpConfig(
         ATF_ERROR(AtfAllocDefaultConfig, atfError);
         return STATUS_BAD_DATA; 
     }
+
+    // Store the default config to filter.c, which takes CONFIG_CTX and the WFP callback as 
+    //  inputs. The filter does not need a filter state of its own.
+    //
+    // If a default config already exists, we can override it, so the filter engine
+    //  will destroy the configCtx and load the new one as supplied by the user
+    AtfFilterStoreDefaultConfig(configCtx);
 
     ATF_DEBUG(AtfHandleStartWFP, "Sucessfully processed config ini!");
     return ntStatus;

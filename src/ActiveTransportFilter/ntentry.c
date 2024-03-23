@@ -5,6 +5,7 @@
 #include "ioctl.h"
 #include "trace.h"
 #include "wfp.h"
+#include "filter.h"
 #include "../common/common.h"
 
 // Structure for initializing NT entry
@@ -83,6 +84,11 @@ NTSTATUS DriverEntry(
     //  Keeping scope local to ntentry
     //
     AtfInitConfig(&atfConfig);
+
+    //
+    // Initialize the base filter engines
+    //
+    AtfFilterInit();
 
     //
     // Create the driver/device object
@@ -201,6 +207,8 @@ VOID AtfUnloadDriver(
     if (isWfpRunning) {
         DestroyWfp(gDeviceObj);
     }
+
+    AtfFilterCleanup();
 }
 
 static VOID AtfInitConfig(
