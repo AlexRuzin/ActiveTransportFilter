@@ -22,9 +22,22 @@
 #include "../common/default_config.h"
 
 //
-// Main callout functions (TCP ipv4)
+// Main callout functions (TCP ipv4 inbound)
 //
-void NTAPI AtfClassifyFuncTcpV4(
+void NTAPI AtfClassifyFuncTcpV4Inbound(
+    _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
+    _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
+    _Inout_opt_ void *layerData,
+    _In_opt_    const void *classifyContext,
+    _In_        const FWPS_FILTER3 *filter,
+    _In_        UINT64 flow_context,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+);
+
+//
+// Main callout functions (TCP ipv4 outbound)
+//
+void NTAPI AtfClassifyFuncTcpV4Outbound(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
     _Inout_opt_ void *layerData,
@@ -113,7 +126,7 @@ const CALLOUT_DESC descList[] = {
         L"ATF Filter TCP V4 Inbound",
         L"ATF Filter Transport ipv4 Inbound",
 
-        AtfClassifyFuncTcpV4
+        AtfClassifyFuncTcpV4Inbound
     },
 
     // TCP Outbound v6
@@ -139,7 +152,7 @@ const CALLOUT_DESC descList[] = {
         L"ATF Filter TCP V4 Outbound",
         L"ATF Filter Transport ipv4 Outbound",
 
-        AtfClassifyFuncTcpV4
+        AtfClassifyFuncTcpV4Outbound
     },
 
     // TCP Outbound v6
@@ -462,7 +475,10 @@ NTSTATUS DestroyWfp(
     return STATUS_SUCCESS;
 }
 
-void NTAPI AtfClassifyFuncTcpV4(
+//
+// Calls directly into the filter engine (AtfFilterCallbackTcpIpv4Inbound/AtfFilterCallbackTcpIpv4Inbound)
+//
+void NTAPI AtfClassifyFuncTcpV4Inbound(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
     _Inout_opt_ void *layerData,
@@ -472,7 +488,61 @@ void NTAPI AtfClassifyFuncTcpV4(
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 )
 {
-    ATF_DEBUG(AtfClassifyFuncTcpV4, "Entered Func");
+    ATF_DEBUG(AtfClassifyFuncTcpV4Inbound, "Entered WFP callout: TCP ipv4 inbound");
+
+    ATF_ERROR atfError = ATF_ERROR_OK;
+
+    UNREFERENCED_PARAMETER(fixedValues);
+    UNREFERENCED_PARAMETER(metaValues);
+    UNREFERENCED_PARAMETER(layerData);
+    UNREFERENCED_PARAMETER(classifyContext);
+    UNREFERENCED_PARAMETER(filter);
+    //UNREFERENCED_PARAMETER(fixedValues);
+    UNREFERENCED_PARAMETER(flow_context);
+    UNREFERENCED_PARAMETER(classify_out);
+
+    ATF_FLT_DATA_IPV4 data = { 0 };
+
+    data.source = (IPV4_RAW_ADDRESS)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_ADDRESS].value.uint32;
+    data.dest = (IPV4_RAW_ADDRESS)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
+
+    data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_PORT].value.uint16;
+    data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
+
+    atfError = AtfFilterCallbackTcpIpv4Inbound(&data);
+    switch(atfError)
+    {
+    case ATF_FILTER_SIGNAL_PASS:
+    {
+    
+    } break;
+    case ATF_FILTER_SIGNAL_BLOCK:
+    {
+    
+    } break;
+    case ATF_FILTER_SIGNAL_ALERT:
+    {
+    
+    } break;
+    default:
+        ATF_ERROR(AtfFilterCallbackTcpIpv4Inbound, atfError);
+        break;
+    }
+
+    return;
+}
+
+void NTAPI AtfClassifyFuncTcpV4Outbound(
+    _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
+    _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
+    _Inout_opt_ void *layerData,
+    _In_opt_    const void *classifyContext,
+    _In_        const FWPS_FILTER3 *filter,
+    _In_        UINT64 flow_context,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+)
+{
+    ATF_DEBUG(AtfClassifyFuncTcpV4Outbound, "Entered WFP callout: TCP ipv4 outbound");
 
     UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(metaValues);
@@ -496,7 +566,7 @@ void NTAPI AtfClassifyFuncTcpV6(
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 )
 {
-    ATF_DEBUG(AtfClassifyFuncTcpV6, "Entered Func");
+    ATF_DEBUG(AtfClassifyFuncTcpV6, "Entered WFP callout: TCP ipv6");
 
     UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(metaValues);
@@ -520,7 +590,7 @@ void NTAPI AtfClassifyFuncIcmp(
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 )
 {
-    ATF_DEBUG(AtfClassifyFuncIcmp, "Entered Func");
+    ATF_DEBUG(AtfClassifyFuncIcmp, "Entered WFP callout: ICMP");
 
     UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(metaValues);

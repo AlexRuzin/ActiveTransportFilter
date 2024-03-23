@@ -41,6 +41,24 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *configCtx)
     ATF_DEBUG(AtfFilterStoreDefaultConfig, "Successfully loaded filter config");
 }
 
+//
+// Filter callback for IPv4 (TCP) 
+//
+ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data)
+{
+    if (data == NULL) {
+        return ATF_BAD_PARAMETERS;
+    }
+
+    KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
+    {
+    
+    }
+    KeReleaseMutex(&filterEngineLock, FALSE);
+
+    return ATF_ERROR_OK;
+}
+
 VOID AtfFilterFlushConfig(VOID)
 {
     KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);

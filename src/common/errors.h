@@ -26,5 +26,11 @@ typedef unsigned int ATF_ERROR;
 #define ATF_CORRUPT_CONFIG                      0x10000002
 #define ATF_NO_MEMORY_AVAILABLE                 0x10000003
 
+//
+// WFP signals
+//
+#define ATF_FILTER_SIGNAL_PASS                  0x20000000
+#define ATF_FILTER_SIGNAL_BLOCK                 0x20000001
+#define ATF_FILTER_SIGNAL_ALERT                 0x20000002
 
 // EOF

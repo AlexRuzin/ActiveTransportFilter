@@ -35,6 +35,11 @@ typedef UINT32                                              _ipv4RawAddress;
 typedef _ipv4RawAddress                                     IPV4_RAW_ADDRESS;
 typedef _ipv4RawAddress                                     *PIPV4_RAW_ADDRESS;
 
+//
+// Global definitions for ports (2^16 in size)
+//
+typedef UINT16                                              _servicePort;
+typedef _servicePort                                        SERVICE_PORT;
 
 #define MAX_IPV4_ADDRESSES_BLACKLIST                        512
 #define MAX_IPV6_ADDRESSES_BLACKLIST                        512

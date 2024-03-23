@@ -13,6 +13,11 @@
 static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *data);
 
 //
+// Sort IP address pool in ascending order
+//
+static VOID AtfConfigSortIpv4List(USER_DRIVER_FILTER_TRANSPORT_DATA *data);
+
+//
 // Create the default config
 //
 ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, CONFIG_CTX **cfgCtx)
@@ -71,6 +76,15 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     *cfgCtx = out;
 
     return ATF_ERROR_OK;
+}
+
+static VOID AtfConfigSortIpv4List(USER_DRIVER_FILTER_TRANSPORT_DATA *data)
+{
+    if (!data || !data->ipv4BlackList || !data->numOfIpv4Addresses) {
+        return;
+    }
+
+
 }
 
 VOID AtfFreeConfig(CONFIG_CTX *ctx)
