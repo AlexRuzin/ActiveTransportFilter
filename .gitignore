@@ -6,6 +6,10 @@
 # Temporary testing directory
 src/DriverController/atf_bin_directory/
 
+# Remove binaries from /bin
+bin/*.sys
+bin/*.exe
+
 # User-specific files
 *.rsuser
 *.suo
