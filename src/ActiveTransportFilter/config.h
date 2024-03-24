@@ -2,8 +2,26 @@
 
 #include <ntddk.h>
 
+#include <initguid.h>
+
+#include "../common/common.h"
 #include "../common/errors.h"
 #include "../common/user_driver_transport.h"
+
+//
+// Layers which will be enabled by the filter engine
+//  This structure is populated by the config ini, and passed to filter.c, 
+//  which will then instruct WFP whether or not to initialize a layer
+// 
+// Further layer descriptors and callbacks are in wfp.c, so adding a layer
+//  requires modification of wfp.c (descList), ini file, USER_DRIVER_FILTER_TRANSPORT_DATA
+//
+#pragma pack(push, 1)
+typedef struct _enabled_layer {
+    const GUID                  *layerGuid;
+    BOOLEAN                     enabled;
+} ENABLED_LAYER, *PENABLED_LAYER;
+#pragma pack(pop)
 
 //
 // Represents the entire filter configuration context
@@ -15,12 +33,9 @@
 typedef struct _config_ctx {
     BOOLEAN                         isValidConfig; //placeholder
 
-    // Layer configs
-    BOOLEAN                         enableLayerIpv4TcpInbound;
-    BOOLEAN                         enableLayerIpv4TcpOutbound;
-    BOOLEAN                         enableLayerIpv6TcpInbound;
-    BOOLEAN                         enableLayerIpv6TcpOutbound;
-    BOOLEAN                         enableLayerIcmpv4;
+    // List of WFP callouts to register, as configured by the user
+    UINT8                           numOfLayers;
+    ENABLED_LAYER                   enabledLayers[MAX_CALLOUT_LAYER_DATA];
 
     // A n-length pool, aligned by 32-bits, representing all known IPv4 addresses
     UINT16                          numOfIpv4Addresses;

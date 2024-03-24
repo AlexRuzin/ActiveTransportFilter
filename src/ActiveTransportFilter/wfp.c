@@ -115,6 +115,12 @@ static NTSTATUS AtfAddCalloutLayer(
     const CALLOUT_DESC *calloutDesc
 );
 
+//
+// The callout descriptor layers. For each to be enabled, the user-mode ini must have each set to true.
+//  wfp.c will then query filter.c for the aformentioned config, and will initialize the layers that way
+// 
+// wfp.c cannot initialize WFP if there is no config supplied by the user, the WFP startup will fail.
+//
 const CALLOUT_DESC descList[] = {
     // TCP Inbound v4
     {
@@ -185,7 +191,7 @@ const CALLOUT_DESC descList[] = {
 };
 
 //
-// Structure that contains the callout, filter and layer object
+// Structure that contains the callout, filter and layer object once instantiated
 //  Used for maintaining and uninitializing the layers at shutdown (or modifying them)
 //
 #define CALLOUT_LAYER_DATA_MAGIC            0x45132341
@@ -211,7 +217,6 @@ typedef struct _callout_layer_descriptor {
 //
 // Layer descriptors (see fwpmk.h for layer descriptors)
 //
-#define MAX_CALLOUT_LAYER_DATA              256 // We will never need more than 256 layer descriptors
 static CALLOUT_LAYER_DESCRIPTOR calloutData[MAX_CALLOUT_LAYER_DATA];
 
 //
@@ -468,11 +473,24 @@ NTSTATUS DestroyWfp(
 
     FwpmProviderDeleteByKey(kmfeHandle, &ATF_FWPM_PROVIDER_KEY);
     FwpmEngineClose(kmfeHandle);
+    kmfeHandle = 0; // Signal the IOCTLs that WFP is not running
 
     // Cleanup
     RtlZeroMemory(calloutData, MAX_CALLOUT_LAYER_DATA * sizeof(CALLOUT_LAYER_DESCRIPTOR));
 
     return STATUS_SUCCESS;
+}
+
+//
+// Return a TRUE if WFP is initialized
+//
+BOOLEAN IsWfpRunning(VOID)
+{
+    if (kmfeHandle != 0) {
+        return TRUE;
+    }
+
+    return FALSE;
 }
 
 //

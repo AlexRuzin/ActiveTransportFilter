@@ -70,14 +70,16 @@ VOID AtfFilterFlushConfig(VOID)
     }
     KeReleaseMutex(&filterEngineLock, FALSE);
 }
-
-//
-// Cleanup filter engine on driver unload
-//
-VOID AtfFilterCleanup(VOID)
-{
-    AtfFilterFlushConfig();
-
-    ATF_DEBUG(AtfFilterCleanup, "Successfully unloaded the filter engine");
-}
     
+//
+// Returns TRUE if a config exists
+//  A filter config must exist for the WFP callouts to be registered
+//
+BOOLEAN AtfFilterIsInitialized(VOID)
+{
+    if (gConfigCtx != NULL) {
+        return TRUE;
+    }
+
+    return FALSE;
+}

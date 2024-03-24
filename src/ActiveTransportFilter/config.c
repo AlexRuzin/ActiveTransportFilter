@@ -1,4 +1,21 @@
+#if !defined(NT)
+#define NT
+#endif //NT
+
+//
+// Require ndis and wfp for layer GUIDs
+//
+#if !defined(NDIS60)
+#define NDIS60 1
+#endif //NDIS60
+
+#if !defined(NDIS_SUPPORT_NDIS6)
+#define NDIS_SUPPORT_NDIS6 1
+#endif //NDIS_SUPPORT_NDIS6
+
 #include <ntddk.h>
+#include <fwpsk.h>
+#include <fwpmk.h>
 
 #include "config.h"
 
@@ -6,6 +23,16 @@
 #include "mem.h"
 #include "../common/errors.h"
 #include "../common/user_driver_transport.h"
+
+//
+// Simple define for checking if a layer needs to be enabled or not
+//
+#define ADD_WFP_LAYER(isEnabled, guidPtr) \
+{ \
+    out->enabledLayers[out->numOfLayers].layerGuid = guidPtr; \
+    out->enabledLayers[out->numOfLayers].enabled = isEnabled; \
+    out->numOfLayers++; \
+} 
 
 //
 // Do check on the data coming in from user mode; validate
@@ -39,11 +66,11 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
 
     out->isValidConfig = TRUE;
 
-    out->enableLayerIpv4TcpInbound              = data->enableLayerIpv4TcpInbound;
-    out->enableLayerIpv4TcpOutbound             = data->enableLayerIpv4TcpOutbound;
-    out->enableLayerIpv6TcpInbound              = data->enableLayerIpv6TcpInbound;
-    out->enableLayerIpv6TcpOutbound             = data->enableLayerIpv6TcpOutbound;
-    out->enableLayerIcmpv4                      = data->enableLayerIcmpv4;
+    ADD_WFP_LAYER(data->enableLayerIpv4TcpInbound, &FWPM_LAYER_INBOUND_TRANSPORT_V4);
+    ADD_WFP_LAYER(data->enableLayerIpv4TcpOutbound, &FWPM_LAYER_OUTBOUND_TRANSPORT_V4);
+    ADD_WFP_LAYER(data->enableLayerIpv6TcpInbound, &FWPM_LAYER_INBOUND_TRANSPORT_V6);
+    ADD_WFP_LAYER(data->enableLayerIpv6TcpOutbound, &FWPM_LAYER_OUTBOUND_TRANSPORT_V6);
+    ADD_WFP_LAYER(data->enableLayerIcmpv4, &FWPM_CONDITION_ORIGINAL_ICMP_TYPE);
 
     out->numOfIpv4Addresses                     = data->numOfIpv4Addresses;
     out->numOfIpv6Addresses                     = data->numOfIpv6Addresses;

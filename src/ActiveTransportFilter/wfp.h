@@ -22,4 +22,9 @@ NTSTATUS DestroyWfp(
     _In_ DEVICE_OBJECT *deviceObject
 );
 
+//
+// Return a TRUE if WFP is initialized
+//
+BOOLEAN IsWfpRunning(VOID);
+
 // EOF

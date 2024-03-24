@@ -23,11 +23,6 @@ typedef struct _atf_config {
 ATF_CONFIG atfConfig = { 0 };
 
 //
-// Success on DriverEntry()
-//
-static BOOLEAN isWfpRunning = FALSE;
-
-//
 // Main DEVICE_OBJECT pointer -- for only one device
 //
 static DEVICE_OBJECT *gDeviceObj = NULL;
@@ -86,7 +81,8 @@ NTSTATUS DriverEntry(
     AtfInitConfig(&atfConfig);
 
     //
-    // Initialize the base filter engines
+    // Initialize the base filter engine
+    //  filter.c will be initialized without a config. Without one, WFP cannot start.
     //
     AtfFilterInit();
 
@@ -121,7 +117,6 @@ NTSTATUS DriverEntry(
 
 
     ATF_DEBUG(WdfDriverCreate, "Successfully created device driver object");
-    isWfpRunning = TRUE;
 
     return ntStatus;
 }
@@ -204,11 +199,20 @@ VOID AtfUnloadDriver(
 
     UNREFERENCED_PARAMETER(driverObj);
 
-    if (isWfpRunning) {
+    if (IsWfpRunning()) {
+        ATF_DEBUG(AtfUnloadDriver, "WFP is running, halting and cleaning up...");
         DestroyWfp(gDeviceObj);
     }
 
-    AtfFilterCleanup();
+    //
+    // Destroy the filter config
+    //
+    if (AtfFilterIsInitialized()) {
+        ATF_DEBUG(AtfUnloadDriver, "A filter config exists, cleaning up");
+        AtfFilterFlushConfig();
+    }
+
+    ATF_DEBUG(AtfUnloadDriver, "Successfully cleaned up driver subsystems");
 }
 
 static VOID AtfInitConfig(

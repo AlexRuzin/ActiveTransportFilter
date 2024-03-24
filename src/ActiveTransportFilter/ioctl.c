@@ -47,6 +47,14 @@ static NTSTATUS AtfHandleSendWfpConfig(
 );
 
 //
+// Handler for flush config
+//  Note, for this call to succeed, WFP must first be shut down (i.e. call to ATFHandleStopWFP())
+//
+static NTSTATUS AtfHandleFlushConfig(
+    _In_ DEVICE_OBJECT *deviceObj
+);
+
+//
 // Lock that handles synchronization between IOCTL calls
 //
 KMUTEX gIoctlLock;
@@ -136,7 +144,9 @@ VOID AtfIoDeviceControl(
         break;
     case IOCTL_ATF_FLUSH_CONFIG:
         {
-    
+            ntStatus = AtfHandleFlushConfig(
+                deviceObject
+            );
         }
         break;
     case IOCTL_ATF_SEND_WFP_CONFIG:
@@ -170,6 +180,22 @@ static NTSTATUS AtfHandleStartWFP(
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
     //
+    // WFP cannot be already running
+    //
+    if (IsWfpRunning()) {
+        ATF_ERROR(IsWfpRunning, STATUS_DEVICE_BUSY);
+        return STATUS_DEVICE_BUSY;
+    }
+
+    //
+    // Verify that the filter is ready (i.e. a default config was received)
+    //
+    if (!AtfFilterIsInitialized()) {
+        ATF_ERROR(AtfFilterIsInitialized, STATUS_DEVICE_NOT_READY);
+        return STATUS_DEVICE_NOT_READY;
+    }
+
+    //
     // Initialize the WFP subsystem, but do not populate callouts yet
     //
     ntStatus = InitializeWfp(deviceObj);
@@ -188,6 +214,11 @@ static NTSTATUS AtfHandleStopWFP(
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
+    if (!IsWfpRunning()) {
+        ATF_ERROR(IsWfpRunning, STATUS_UNSUCCESSFUL);
+        return STATUS_UNSUCCESSFUL;
+    }
+
     //
     // Remove all callouts and filters
     //
@@ -201,6 +232,38 @@ static NTSTATUS AtfHandleStopWFP(
     return ntStatus;
 }
 
+static NTSTATUS AtfHandleFlushConfig(
+    _In_ DEVICE_OBJECT *deviceObj
+)
+{
+    UNREFERENCED_PARAMETER(deviceObj);
+
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    if (IsWfpRunning()) {
+        // WFP cannot be running for a filter config to be flushed. AtfHandleStopWFP() must be called first
+        ATF_ERROR(AtfHandleFlushConfig, STATUS_DEVICE_BUSY);
+        return STATUS_DEVICE_BUSY;
+    }
+
+    //
+    // Verify that there is a config to flush
+    //
+    if (!AtfFilterIsInitialized()) {
+        ATF_ERROR(AtfFilterIsInitialized, STATUS_DEVICE_NOT_READY);
+        return STATUS_DEVICE_NOT_READY;
+    }
+
+    AtfFilterFlushConfig();
+    
+    ATF_DEBUG(AtfFilterFlushConfig, "Successfully flushed filter config");
+    return ntStatus;
+}
+
+//
+// Important note: the WFP subsystem can be running while the config is updated.
+//  filter.c will lock filter functions and config refresh functions (TODO: revisit this; possible optimization issue)
+//
 static NTSTATUS AtfHandleSendWfpConfig(
     _In_ WDFREQUEST request, 
     _In_ size_t bufLen
@@ -246,6 +309,6 @@ static NTSTATUS AtfHandleSendWfpConfig(
     //  will destroy the configCtx and load the new one as supplied by the user
     AtfFilterStoreDefaultConfig(configCtx);
 
-    ATF_DEBUG(AtfHandleStartWFP, "Sucessfully processed config ini!");
+    ATF_DEBUG(AtfHandleSendWfpConfig, "Sucessfully processed config ini!");
     return ntStatus;
 }

@@ -25,14 +25,15 @@ typedef struct _atf_filter_conn_data {
 VOID AtfFilterInit(VOID);
 
 //
-// Destroy the filter engine and cleanup
-//
-VOID AtfFilterCleanup(VOID);
-
-//
 // Flush the current config entirely
 //
 VOID AtfFilterFlushConfig(VOID);
+
+//
+// Returns TRUE if a config exists
+//  A filter config must exist for the WFP callouts to be registered
+//
+BOOLEAN AtfFilterIsInitialized(VOID);
 
 //
 // Store the current default ini configuration into the filter engine
@@ -43,6 +44,10 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *confgCtx);
 // Filter callback for IPv4 (TCP) 
 //
 ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data);
+
+//
+// Returns a TRUE is a particular filter i
+//
 
 
 

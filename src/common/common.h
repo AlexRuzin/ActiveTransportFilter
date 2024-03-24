@@ -72,3 +72,9 @@
 //
 #define GLOBAL_MAX_IPV4_ADDRESSES           65536 // 2^16
 #define GLOBAL_MAX_IPV6_ADDRESSES           16384 // 2^16
+
+//
+// Max number of WFP layer descriptors. In reality this driver will not need to hook more than
+//  several layers, but adding 256 "just in case"
+//
+#define MAX_CALLOUT_LAYER_DATA              256 // We will never need more than 256 layer descriptors
