@@ -6,7 +6,7 @@
 
 This is a project that I have started for educational purposes, please feel free to use it how you wish.
 
-`ActiveTransportFilter` is a driver (WDF) that makes use of the Windows Filtering Platform for **IP blacklisting**, **DNSBL**, and **packet inspection**. I have decided to first implement an the **IP blacklisting** component, as this is simpler and will allow me to build the architecture necessary for implementing a more complex filter driver.
+`ActiveTransportFilter` is a device driver that makes use of the Windows Filtering Platform (WFP) for operating-system level **IP blacklisting**, **Domain level blacklisting**, and **packet inspection**. I have decided to first implement the **IP blacklisting** component, as this is simpler and will allow me to build the architecture necessary for implementing a more complex filter driver.
 
 ## ActiveTransportFilter (ATF) project summary
 
