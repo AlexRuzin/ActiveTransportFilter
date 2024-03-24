@@ -509,8 +509,6 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 )
 {
-    ATF_DEBUG(AtfClassifyFuncTcpV4Inbound, "Entered WFP callout: TCP ipv4 inbound");
-
     ATF_ERROR atfError = ATF_ERROR_OK;
 
     UNREFERENCED_PARAMETER(fixedValues);
@@ -524,13 +522,13 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
 
     ATF_FLT_DATA_IPV4 data = { 0 };
 
-    data.source = (IPV4_RAW_ADDRESS)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_ADDRESS].value.uint32;
-    data.dest = (IPV4_RAW_ADDRESS)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
+    data.source.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_ADDRESS].value.uint32;
+    data.dest.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
 
     data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_PORT].value.uint16;
     data.destPort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
 
-    atfError = AtfFilterCallbackTcpIpv4Inbound(&data);
+    atfError = AtfFilterCallbackTcpIpv4(_flow_direction_inbound, &data);
     switch(atfError)
     {
     case ATF_FILTER_SIGNAL_PASS:
@@ -571,16 +569,52 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
     _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
 )
 {
-    ATF_DEBUG(AtfClassifyFuncTcpV4Outbound, "Entered WFP callout: TCP ipv4 outbound");
+    ATF_ERROR atfError = ATF_ERROR_OK;
 
     UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(metaValues);
     UNREFERENCED_PARAMETER(layerData);
     UNREFERENCED_PARAMETER(classifyContext);
     UNREFERENCED_PARAMETER(filter);
-    UNREFERENCED_PARAMETER(fixedValues);
+    //UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(flow_context);
     UNREFERENCED_PARAMETER(classify_out);
+
+    ATF_FLT_DATA_IPV4 data = { 0 };
+
+    data.source.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_LOCAL_ADDRESS].value.uint32;
+    data.dest.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
+
+    data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_LOCAL_PORT].value.uint16;
+    data.destPort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
+
+    atfError = AtfFilterCallbackTcpIpv4(_flow_direction_outbound, &data);
+    switch(atfError)
+    {
+    case ATF_FILTER_SIGNAL_PASS:
+    {
+
+    } 
+    break;
+    case ATF_FILTER_SIGNAL_BLOCK:
+    {
+
+    } 
+    break;
+    case ATF_FILTER_SIGNAL_ALERT:
+    {
+
+    } 
+    break;
+    case ATF_ERROR_OK:
+    {
+
+    } 
+    break;
+    default:
+        ATF_ERROR(AtfFilterCallbackTcpIpv4Inbound, atfError);
+        break;
+    }
 
     return;
 }

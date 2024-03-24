@@ -26,7 +26,7 @@ private:
     bool                                        enableLayerIpv6TcpOutbound;
     bool                                        enableLayerIcmpv4;
 
-    std::vector<IPV4_RAW_ADDRESS>               blocklistIpv4;
+    std::vector<struct in_addr>                 blocklistIpv4;
     std::vector<IPV6_RAW_ADDRESS>               blocklistIpv6;
 
 

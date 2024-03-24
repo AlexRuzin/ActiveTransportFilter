@@ -12,10 +12,18 @@
 
 #include "config.h"
 
+//https://stackoverflow.com/questions/32786493/reversing-byte-order-in-c
+#define reverse_byte_order_uint32_t(num)     ( ((num & 0xFF000000) >> 24) | ((num & 0x00FF0000) >> 8) | ((num & 0x0000FF00) << 8) | ((num & 0x000000FF) << 24) )
+
+enum _flow_direction {
+    _flow_direction_outbound,
+    _flow_direction_inbound
+};
+
 #pragma pack(push, 1)
 typedef struct _atf_filter_conn_data {
-    IPV4_RAW_ADDRESS            source;
-    IPV4_RAW_ADDRESS            dest;
+    struct in_addr              source;
+    struct in_addr              dest;
 
     SERVICE_PORT                sourcePort;
     SERVICE_PORT                destPort;
@@ -46,12 +54,11 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *confgCtx);
 //
 // Filter callback for IPv4 (TCP) 
 //
-ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data);
+ATF_ERROR AtfFilterCallbackTcpIpv4(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data);
 
 //
 // Returns a TRUE is a WFP filter layer guid is to be enabled 
 //  This data is supplied by the ini file and stored in filter.c's CONFIG_CTX object
 //
 BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid);
-
 

@@ -5,6 +5,8 @@
 #include <initguid.h>
 #include <guiddef.h>
 
+#include <inaddr.h>
+
 #include "../common/common.h"
 #include "../common/errors.h"
 #include "../common/user_driver_transport.h"
@@ -40,7 +42,7 @@ typedef struct _config_ctx {
 
     // A n-length pool, aligned by 32-bits, representing all known IPv4 addresses
     UINT16                          numOfIpv4Addresses;
-    IPV4_RAW_ADDRESS                *ipv4AddressPool;
+    struct in_addr                  *ipv4AddressPool;
 
     // IPv6 blacklist pool
     UINT16                          numOfIpv6Addresses;

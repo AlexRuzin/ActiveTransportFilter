@@ -2,13 +2,15 @@
 #pragma once
 #endif //_MSC_VER > 1000
 
+#include <inaddr.h>
+
 //
 // This header contains the transport configuration between usermode and kernelmode
 //  Includes structures, constants, and objects, that can be safely transported to the ATF driver
 //
 
 //
-// Object to represent an IPv6 address
+// Object to represent an IPv6 address (TODO: replace with standard API)
 //
 #pragma pack(push, 1)
 typedef struct _ipv6RawAddress {
@@ -27,13 +29,6 @@ typedef struct _ipv6RawAddress {
     } a;
 } IPV6_RAW_ADDRESS, *PIPV6_RAW_ADDRESS;
 #pragma pack(pop)
-
-//
-// Object to represent an IPv4 address
-//
-typedef UINT32                                              _ipv4RawAddress;
-typedef _ipv4RawAddress                                     IPV4_RAW_ADDRESS;
-typedef _ipv4RawAddress                                     *PIPV4_RAW_ADDRESS;
 
 //
 // Global definitions for ports (2^16 in size)
@@ -72,6 +67,6 @@ typedef struct _user_driver_filter_transport_data {
 
     // Blacklist for all IPv4 addresses
     UINT16                                                  numOfIpv4Addresses;
-    IPV4_RAW_ADDRESS                                        ipv4BlackList[MAX_IPV6_ADDRESSES_BLACKLIST];
+    struct in_addr                                          ipv4BlackList[MAX_IPV6_ADDRESSES_BLACKLIST];
 } USER_DRIVER_FILTER_TRANSPORT_DATA, *PUSER_DRIVER_FILTER_TRANSPORT_DATA;
 #pragma pack(pop)

@@ -77,7 +77,9 @@ inline uint32_t GetNumberOfCharsInStr(const std::string &s, const char &c)
 }
 
 //
-// Convert a string to an IPv4 address, return as uint32_t in little endian
+// Convert a string to an IPv4 address, return as uint32_t in big endian,
+//  since WFP passes big-endian addresses in struct.in_addr type
+// 
 //  If it's not a valid address, return false
 //
 inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)

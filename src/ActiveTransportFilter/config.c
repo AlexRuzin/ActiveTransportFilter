@@ -76,8 +76,8 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     out->numOfIpv6Addresses                     = data->numOfIpv6Addresses;
 
     if (out->numOfIpv4Addresses) {
-        const UINT32 sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(IPV4_RAW_ADDRESS);
-        out->ipv4AddressPool = (IPV4_RAW_ADDRESS *)ATF_MALLOC(sizeOfIpv4Pool);
+        const UINT32 sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(struct in_addr);
+        out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv4Pool);
         if (!out) {
             ATF_FREE(out);
             return ATF_NO_MEMORY_AVAILABLE;
@@ -88,7 +88,7 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
 
     if (out->numOfIpv6Addresses) {
         const UINT32 sizeOfIpv6Pool = out->numOfIpv6Addresses * sizeof(IPV6_RAW_ADDRESS);
-        out->ipv4AddressPool = (IPV4_RAW_ADDRESS *)ATF_MALLOC(sizeOfIpv6Pool);
+        out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv6Pool);
         if (!out) {
             if (out->ipv4AddressPool) {
                 ATF_FREE(out->ipv4AddressPool);
@@ -157,7 +157,7 @@ static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *
 
     // Check that all IPs in the blacklist are > 0.0.0.0
     for (UINT16 i = 0; i < data->numOfIpv4Addresses; i++) {
-        if (data->ipv4BlackList[i] == 0x00000000) {
+        if (data->ipv4BlackList[i].S_un.S_addr == 0x00000000) {
             ATF_DEBUG(AtfIniConfigSanityCheck, "An ipv4 gateway address was provided. Bad config.");
             return FALSE;
         }

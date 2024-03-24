@@ -1,5 +1,7 @@
 #include <Windows.h>
 
+#pragma comment(lib, "Ws2_32.lib")
+
 #include <INIReader.h>
 
 #include "ini_reader.h"
@@ -41,9 +43,15 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
 
         for (std::vector<std::string>::const_iterator i = out.begin(); i != out.end(); i++) {
             uint32_t out = 0;
-            if (shared::ParseStringToIpv4(*i, out)) {
-                blocklistIpv4.push_back((IPV4_RAW_ADDRESS)out);
+
+            if (!shared::ParseStringToIpv4(*i, out)) {
+                continue;
             }
+
+            struct in_addr ipAddr;
+            ipAddr.S_un.S_addr = out;
+
+            blocklistIpv4.push_back(ipAddr);
         }
     }
 
@@ -74,7 +82,7 @@ void FilterConfig::genIoctlStruct(void)
     rawTransportData.enableLayerIcmpv4 = enableLayerIcmpv4;
 
     rawTransportData.numOfIpv4Addresses = (UINT16)blocklistIpv4.size();
-    for (std::vector<IPV4_RAW_ADDRESS>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
+    for (std::vector<struct in_addr>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
         rawTransportData.ipv4BlackList[i - blocklistIpv4.begin()] = *i;
     }
 }

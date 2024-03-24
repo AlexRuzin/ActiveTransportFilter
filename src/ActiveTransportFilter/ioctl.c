@@ -113,7 +113,7 @@ VOID AtfIoDeviceControl(
     //
     KeWaitForSingleObject(&gIoctlLock, Executive, KernelMode, FALSE, NULL);
 
-    DbgBreakPoint();
+    //DbgBreakPoint();
 
     NTSTATUS ntStatus = STATUS_SUCCESS;
 

@@ -1,5 +1,9 @@
 #include <ntddk.h>
 
+#include <ntstrsafe.h>
+#include <ip2string.h>
+#include <inaddr.h>
+
 #include <initguid.h>
 #include <guiddef.h>
 
@@ -16,14 +20,12 @@
 static CONFIG_CTX* gConfigCtx = NULL;
 
 //
-// Filter engine configuration state change lock
+// For debugging, print the target ip from DWORd to string
 //
-KMUTEX filterEngineLock;
+static VOID AtfFilterPrintIP(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data);
 
 VOID AtfFilterInit(VOID)
 {
-    KeInitializeMutex(&filterEngineLock, 0);
-
     gConfigCtx = NULL;
 }
 
@@ -35,25 +37,17 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *configCtx)
         AtfFilterFlushConfig();
     }
 
-    KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
-    {
-        gConfigCtx = (CONFIG_CTX *)configCtx;
-    }
-    KeReleaseMutex(&filterEngineLock, FALSE);
+    gConfigCtx = (CONFIG_CTX *)configCtx;
 
     ATF_DEBUG(AtfFilterStoreDefaultConfig, "Successfully loaded filter config");
 }
 
 VOID AtfFilterFlushConfig(VOID)
 {
-    KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
-    {
-        if (gConfigCtx) {
-            AtfFreeConfig(gConfigCtx);
-            gConfigCtx = NULL;
-        }
+    if (gConfigCtx) {
+        AtfFreeConfig(gConfigCtx);
+        gConfigCtx = NULL;
     }
-    KeReleaseMutex(&filterEngineLock, FALSE);
 }
     
 //
@@ -99,18 +93,43 @@ BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid)
 //
 // Filter callback for IPv4 (TCP) 
 //
-ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data)
+ATF_ERROR AtfFilterCallbackTcpIpv4(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data)
 {
     if (data == NULL) {
         return ATF_BAD_PARAMETERS;
-    }
+    }    
 
-    KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
-    {
-
-    }
-    KeReleaseMutex(&filterEngineLock, FALSE);
+    AtfFilterPrintIP(dir, data);
 
     return ATF_ERROR_OK;
 }
 
+static VOID AtfFilterPrintIP(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data)
+{
+    // Convert from big-endian to little-endian and print flow to debug
+
+    // Source IP
+    struct in_addr leSrcIp; 
+    leSrcIp.S_un.S_addr = reverse_byte_order_uint32_t((UINT32)data->source.S_un.S_addr);
+
+    CHAR ipAddrStrSrc[32] = { 0 };
+    RtlIpv4AddressToStringA(&leSrcIp, ipAddrStrSrc);
+
+    // Dest IP
+    struct in_addr leDestIp;
+    leDestIp.S_un.S_addr = reverse_byte_order_uint32_t((UINT32)data->dest.S_un.S_addr);
+
+    CHAR ipAddrStrDst[32] = { 0 };
+    RtlIpv4AddressToStringA(&leDestIp, ipAddrStrDst);
+
+    if (dir == _flow_direction_inbound) {
+        ATF_DEBUGA("New TCP flow: INBOUND (src: %s:%d, dst: %s:%d)\n", 
+            ipAddrStrSrc, data->sourcePort, ipAddrStrDst, data->destPort);
+    } else if (dir == _flow_direction_outbound) {
+        ATF_DEBUGA("New TCP flow: OUTBOUND (src: %s:%d, dst: %s:%d)\n", 
+            ipAddrStrDst, data->destPort, ipAddrStrSrc, data->sourcePort);
+    }
+
+    RtlZeroMemory(ipAddrStrSrc, 32);
+    RtlZeroMemory(ipAddrStrDst, 32);
+}
