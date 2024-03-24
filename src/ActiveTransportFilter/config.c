@@ -40,11 +40,6 @@
 static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *data);
 
 //
-// Sort IP address pool in ascending order
-//
-static VOID AtfConfigSortIpv4List(struct in_addr *buf);
-
-//
 // Create the default config
 //
 ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, CONFIG_CTX **cfgCtx)
@@ -112,6 +107,8 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
+    const size_t numOfIps = bufLen / sizeof(struct in_addr);
+
     if (!ctx || !blacklist || !bufLen || bufLen % sizeof(struct in_addr)) {
         return ATF_BAD_PARAMETERS;
     }
@@ -120,6 +117,7 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size
         return ATF_IOCTL_BUFFER_TOO_LARGE;
     }
 
+    //TODO: cleanup the pool
     if (ctx->ipv4AddressPool) {
         //Append
         struct in_addr *newPool = ATF_MALLOC(bufLen + (ctx->numOfIpv4Addresses * sizeof(struct in_addr)));
@@ -132,10 +130,14 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size
 
         ATF_FREE(ctx->ipv4AddressPool);
         ctx->ipv4AddressPool = newPool;
-        ctx->numOfIpv4Addresses += bufLen / sizeof(struct in_addr);
-
+        ctx->numOfIpv4Addresses += numOfIps;
     } else {
         //Assign
+        atfError = AtfIpv4TrieAllocCtx(&ctx->ipv4TrieCtx);
+        if (atfError) {
+            return atfError;
+        }
+
         ctx->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(bufLen);
         if (!ctx->ipv4AddressPool) {
             return ATF_NO_MEMORY_AVAILABLE;
@@ -144,20 +146,13 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size
         RtlCopyMemory(ctx->ipv4AddressPool, blacklist, bufLen);
     }
 
-    //Sort
-    AtfConfigSortIpv4List(ctx->ipv4AddressPool);
-
-    return atfError;
-}
-
-static VOID AtfConfigSortIpv4List(struct in_addr *buf)
-{
-    if (!buf) {
-        return;
+    // Append IP pool to trie
+    atfError = AtfIpv4TrieInsertPool(ctx->ipv4TrieCtx, (const struct in_addr *)blacklist, numOfIps);
+    if (atfError) {
+        return atfError;
     }
 
-
-
+    return atfError;
 }
 
 VOID AtfFreeConfig(CONFIG_CTX *ctx)

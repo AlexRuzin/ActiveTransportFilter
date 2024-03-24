@@ -59,6 +59,10 @@ The components are packed into `DriverController`'s resource segment, and automa
 
 This is still under design. I will most likely use a type of radix "trie" to create a tree which will have 255 children for each octet in the IP. I will experiment with various methods until I find one that is most suitable.
 
+* Experimentation with a "patricia trie", an O(m) search (for each ipv4 octet), but in 64-bit space. 
+* Each array contains a pointer to another array and so on for 4 octets. 
+* The size of a trie is twice as large on x64 than x86 due to the pointer size.
+
 ## Interesting Fixes and Discoveries During Development
 
 ### Implement correct IRQL

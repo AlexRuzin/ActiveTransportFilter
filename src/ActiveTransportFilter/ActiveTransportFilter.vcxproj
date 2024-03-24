@@ -99,6 +99,7 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
     <ClCompile Include="config.c" />
     <ClCompile Include="filter.c" />
     <ClCompile Include="ioctl.c" />
+    <ClCompile Include="ipv4_trie.c" />
     <ClCompile Include="mem.c" />
     <ClCompile Include="ntentry.c" />
     <ClCompile Include="wfp.c" />
@@ -113,6 +114,7 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
     <ClInclude Include="config.h" />
     <ClInclude Include="filter.h" />
     <ClInclude Include="ioctl.h" />
+    <ClInclude Include="ipv4_trie.h" />
     <ClInclude Include="mem.h" />
     <ClInclude Include="ntentry.h" />
     <ClInclude Include="trace.h" />

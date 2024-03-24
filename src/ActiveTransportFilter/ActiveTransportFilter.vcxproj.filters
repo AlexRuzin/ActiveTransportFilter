@@ -45,6 +45,9 @@
     <ClCompile Include="mem.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ipv4_trie.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="trace.h">
@@ -84,6 +87,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="mem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ipv4_trie.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

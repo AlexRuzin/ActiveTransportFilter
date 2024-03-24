@@ -11,6 +11,8 @@
 #include "../common/errors.h"
 #include "../common/user_driver_transport.h"
 
+#include "ipv4_trie.h"
+
 //
 // Layers which will be enabled by the filter engine
 //  This structure is populated by the config ini, and passed to filter.c, 
@@ -32,7 +34,6 @@ typedef struct _enabled_layer {
 //  a USER_DRIVER_FILTER_TRANSPORT_DATA structure through IOCTL.
 // 
 //
-#pragma pack(push, 1)
 typedef struct _config_ctx {
     BOOLEAN                         isValidConfig; //placeholder
 
@@ -44,11 +45,15 @@ typedef struct _config_ctx {
     size_t                          numOfIpv4Addresses;
     struct in_addr                  *ipv4AddressPool;
 
+    //
+    // Sortied trie for fast processing
+    //
+    IPV4_TRIE_CTX                   *ipv4TrieCtx;
+
     // IPv6 blacklist pool
     size_t                          numOfIpv6Addresses;
     IPV6_RAW_ADDRESS                *ipv6AddressPool;
 } CONFIG_CTX, *PCONFIG_CTX;
-#pragma pack(pop)
 
 //
 // Initialize the default configuration
