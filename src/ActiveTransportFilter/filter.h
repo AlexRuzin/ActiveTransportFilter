@@ -4,6 +4,9 @@
 
 #include <ntddk.h>
 
+// For handling WFP layer guids
+#include <initguid.h>
+
 #include "../common/user_driver_transport.h"
 #include "../common/errors.h"
 
@@ -46,8 +49,9 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *confgCtx);
 ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data);
 
 //
-// Returns a TRUE is a particular filter i
+// Returns a TRUE is a WFP filter layer guid is to be enabled 
+//  This data is supplied by the ini file and stored in filter.c's CONFIG_CTX object
 //
-
+BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid);
 
 

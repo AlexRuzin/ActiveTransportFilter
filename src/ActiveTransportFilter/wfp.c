@@ -172,9 +172,8 @@ const CALLOUT_DESC descList[] = {
         L"ATF Filter Transport ipv6 Outbound",
 
         AtfClassifyFuncTcpV6
-    }
+    },
 
-#if 0
     // ICMP Original Type
     {
         &FWPM_CONDITION_ORIGINAL_ICMP_TYPE,
@@ -187,7 +186,6 @@ const CALLOUT_DESC descList[] = {
 
         AtfClassifyFuncIcmp
     }
-#endif
 };
 
 //
@@ -297,16 +295,21 @@ NTSTATUS InitializeWfp(
     }
 
     atfDevice = deviceObj;
-
     for (UINT8 currLayer = 0; currLayer < ARRAYSIZE(descList); currLayer++) {
+        if (!AtfFilterIsLayerEnabled(descList[currLayer].guid)) {
+            ATF_DEBUGA("WFP Filter Layer Disabled: %s", descList[currLayer].calloutName);
+            continue;
+        }
+
         ntStatus = AtfAddCalloutLayer(&descList[currLayer]);
         if (!NT_SUCCESS(ntStatus)) {
             ATF_ERROR(AtfAddCalloutLayer, ntStatus);
             return ntStatus;
         }
+        ATF_DEBUGA("WFP Filter Layer Enabled: %s", descList[currLayer].calloutName);
     }
 
-    ATF_DEBUG(InitializeWfp, "All WFP operations successful...");
+    ATF_DEBUG(InitializeWfp, "WFP Startup Successful!");
     return ntStatus;
 }
 

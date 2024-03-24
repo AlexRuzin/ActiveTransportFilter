@@ -2,6 +2,8 @@
 #pragma once
 #endif //_MSC_VER > 1000
 
+#include <limits.h>
+
 //
 // Central configuration for the entire project
 //  Contains mostly strings and constants that are shared between service, driver, etc
@@ -77,4 +79,4 @@
 // Max number of WFP layer descriptors. In reality this driver will not need to hook more than
 //  several layers, but adding 256 "just in case"
 //
-#define MAX_CALLOUT_LAYER_DATA              256 // We will never need more than 256 layer descriptors
+#define MAX_CALLOUT_LAYER_DATA              _UI8_MAX - 1 // We will never need more than 256 layer descriptors

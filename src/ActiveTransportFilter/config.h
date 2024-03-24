@@ -3,6 +3,7 @@
 #include <ntddk.h>
 
 #include <initguid.h>
+#include <guiddef.h>
 
 #include "../common/common.h"
 #include "../common/errors.h"

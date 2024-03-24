@@ -10,8 +10,8 @@
 
 
 
-#define ATF_DEBUGAF(format, ...) KdPrint(__FUNCTION__, format, ##__VA_ARGS__)
-#define ATF_DEBUGWF(format, ...) DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, format, ##__VA_ARGS__)
+//#define ATF_DEBUGAF(format, ...) KdPrint(__FUNCTION__, format, ##__VA_ARGS__)
+#define ATF_DEBUGA(format, ...) DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, format, ##__VA_ARGS__)
 
 
 

@@ -1,5 +1,8 @@
 #include <ntddk.h>
 
+#include <initguid.h>
+#include <guiddef.h>
+
 #include "filter.h"
 
 #include "../common/errors.h"
@@ -41,24 +44,6 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *configCtx)
     ATF_DEBUG(AtfFilterStoreDefaultConfig, "Successfully loaded filter config");
 }
 
-//
-// Filter callback for IPv4 (TCP) 
-//
-ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data)
-{
-    if (data == NULL) {
-        return ATF_BAD_PARAMETERS;
-    }
-
-    KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
-    {
-    
-    }
-    KeReleaseMutex(&filterEngineLock, FALSE);
-
-    return ATF_ERROR_OK;
-}
-
 VOID AtfFilterFlushConfig(VOID)
 {
     KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
@@ -83,3 +68,49 @@ BOOLEAN AtfFilterIsInitialized(VOID)
 
     return FALSE;
 }
+
+BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid)
+{
+    // IOCTL locks are sufficient for this function, as WFP is in the process of initializing
+
+    // Sanity checks just in case
+    if (!guid) {
+        return FALSE;
+    }
+
+    if (!AtfFilterIsInitialized()) {
+        return FALSE;
+    }
+
+    if (gConfigCtx->numOfLayers == 0) {
+        ATF_DEBUG(AtfFilterIsLayerEnabled, "Warning: 0 enabled WFP layers in config");
+        return FALSE;
+    }
+
+    for (UINT8 i = 0; i < gConfigCtx->numOfLayers; i++) {
+        if (IsEqualGUID(guid, gConfigCtx->enabledLayers[i].layerGuid)) {
+            return gConfigCtx->enabledLayers[i].enabled;
+        }
+    }
+
+    return FALSE;
+}
+
+//
+// Filter callback for IPv4 (TCP) 
+//
+ATF_ERROR AtfFilterCallbackTcpIpv4Inbound(const ATF_FLT_DATA_IPV4 *data)
+{
+    if (data == NULL) {
+        return ATF_BAD_PARAMETERS;
+    }
+
+    KeWaitForSingleObject(&filterEngineLock, Executive, KernelMode, FALSE, NULL);
+    {
+
+    }
+    KeReleaseMutex(&filterEngineLock, FALSE);
+
+    return ATF_ERROR_OK;
+}
+
