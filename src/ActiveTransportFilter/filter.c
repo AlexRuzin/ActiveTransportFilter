@@ -24,13 +24,17 @@ static CONFIG_CTX* gConfigCtx = NULL;
 //
 static VOID AtfFilterPrintIP(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data);
 
+//
+// Initialize the filter engine
+//
 VOID AtfFilterInit(VOID)
 {
     gConfigCtx = NULL;
 }
 
 //
-// If an existing config exists, then
+// If an existing config exists, then replace it
+//
 VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *configCtx)
 {
     if (gConfigCtx != NULL) {
@@ -40,6 +44,14 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *configCtx)
     gConfigCtx = (CONFIG_CTX *)configCtx;
 
     ATF_DEBUG(AtfFilterStoreDefaultConfig, "Successfully loaded filter config");
+}
+
+//
+// Return the current config
+//
+CONFIG_CTX *AtfFilterGetCurrentConfig(VOID)
+{
+    return gConfigCtx;
 }
 
 VOID AtfFilterFlushConfig(VOID)

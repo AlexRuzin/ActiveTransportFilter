@@ -25,6 +25,7 @@ typedef unsigned int ATF_ERROR;
 #define ATF_PARSE_INI_CONFIG                    0x10000001
 #define ATF_CORRUPT_CONFIG                      0x10000002
 #define ATF_NO_MEMORY_AVAILABLE                 0x10000003
+#define ATF_IOCTL_BUFFER_TOO_LARGE              0x10000004
 
 //
 // WFP signals

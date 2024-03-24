@@ -10,6 +10,12 @@
 //
 
 //
+// When appending ipv4 blacklists, this will be the maximum size of the packet
+//  The addresses may be appended in subsequent calls
+//
+#define BLACKLIST_IPV4_MAX_SIZE                             0x1000
+
+//
 // Object to represent an IPv6 address (TODO: replace with standard API)
 //
 #pragma pack(push, 1)

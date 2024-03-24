@@ -55,6 +55,14 @@ static NTSTATUS AtfHandleFlushConfig(
 );
 
 //
+// Handler to append blacklist IPs
+//
+static NTSTATUS AtfHandlerAppendIpv4Blacklist(
+    _In_ WDFREQUEST request, 
+    _In_ size_t bufLen
+);
+
+//
 // Lock that handles synchronization between IOCTL calls
 //
 KMUTEX gIoctlLock;
@@ -263,8 +271,11 @@ static NTSTATUS AtfHandleFlushConfig(
 }
 
 //
-// Important note: the WFP subsystem can be running while the config is updated.
-//  filter.c will lock filter functions and config refresh functions (TODO: revisit this; possible optimization issue)
+// Important note: the WFP subsystem cannot be running while appending blacklist IPs.
+//  The service must be stopped IOCTL_ATF_WFP_SERVICE_STOP, then appended (IOCTL_ATF_APPEND_IPV4_BLACKLIST), 
+//  then restarted by calling IOCTL_ATF_WFP_SERVICE_START
+// 
+// Note: The filter.c engine will automatically flush its config if a new config is received
 //
 static NTSTATUS AtfHandleSendWfpConfig(
     _In_ WDFREQUEST request, 
@@ -272,6 +283,12 @@ static NTSTATUS AtfHandleSendWfpConfig(
 )
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    if (IsWfpRunning()) {
+        // WFP cannot be running when sending the config
+        ATF_ERROR(IsWfpRunning, STATUS_DEVICE_BUSY);
+        return STATUS_DEVICE_BUSY;
+    }
 
     if (bufLen == 0) {
         return STATUS_NO_DATA_DETECTED;
@@ -314,3 +331,64 @@ static NTSTATUS AtfHandleSendWfpConfig(
     ATF_DEBUG(AtfHandleSendWfpConfig, "Sucessfully processed config ini!");
     return ntStatus;
 }
+
+static NTSTATUS AtfHandlerAppendIpv4Blacklist(
+    _In_ WDFREQUEST request,  
+    _In_ size_t bufLen
+)
+{
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    if (IsWfpRunning()) {
+        // WFP cannot be running when sending the blacklist
+        ATF_ERROR(IsWfpRunning, STATUS_DEVICE_BUSY);
+        return STATUS_DEVICE_BUSY;
+    }
+
+    //
+    // There must exist at least a default config (IOCTL_ATF_SEND_WFP_CONFIG) before blacklist IPs can be appended
+    //
+    if (!AtfFilterIsInitialized()) {
+        ATF_ERROR(AtfFilterIsInitialized, STATUS_DEVICE_NOT_READY);
+        return STATUS_DEVICE_NOT_READY;
+    }
+
+    if (bufLen == 0) {
+        return STATUS_NO_DATA_DETECTED;
+    }
+
+    if (bufLen > BLACKLIST_IPV4_MAX_SIZE) {
+        return STATUS_BUFFER_TOO_SMALL;
+    }
+
+    //
+    // config.c will reallocate this memory and store a pointer into the current filter.c's CONFIG_CTX object
+    //
+    CONFIG_CTX *configCtx = AtfFilterGetCurrentConfig();
+    if (!configCtx) {
+        ATF_ERROR(AtfFilterGetCurrentConfig, STATUS_DEVICE_NOT_READY);
+        return STATUS_DEVICE_NOT_READY;
+    }
+
+    VOID *rawBuf = NULL;
+
+    ntStatus = WdfRequestRetrieveInputBuffer(
+        request,
+        bufLen,
+        (PVOID *)&rawBuf,
+        NULL
+    );
+    if (!NT_SUCCESS(ntStatus)) {
+        return ntStatus;
+    }
+
+    ATF_ERROR atfError = AtfConfigAddIpv4Blacklist(configCtx, rawBuf, bufLen);
+    if (atfError) {
+        ATF_ERROR(AtfConfigAddIpv4Blacklist, atfError);
+        return STATUS_DEVICE_NOT_READY;
+    }
+
+    return ntStatus;
+}
+
+//EOF

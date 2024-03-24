@@ -62,3 +62,8 @@ ATF_ERROR AtfFilterCallbackTcpIpv4(enum _flow_direction dir, const ATF_FLT_DATA_
 //
 BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid);
 
+//
+// Returns the current config. Used to append an IPv4 blacklist to the existing config
+//
+CONFIG_CTX *AtfFilterGetCurrentConfig(VOID);
+

@@ -37,15 +37,15 @@ typedef struct _config_ctx {
     BOOLEAN                         isValidConfig; //placeholder
 
     // List of WFP callouts to register, as configured by the user
-    UINT8                           numOfLayers;
+    size_t                          numOfLayers;
     ENABLED_LAYER                   enabledLayers[MAX_CALLOUT_LAYER_DATA];
 
     // A n-length pool, aligned by 32-bits, representing all known IPv4 addresses
-    UINT16                          numOfIpv4Addresses;
+    size_t                          numOfIpv4Addresses;
     struct in_addr                  *ipv4AddressPool;
 
     // IPv6 blacklist pool
-    UINT16                          numOfIpv6Addresses;
+    size_t                          numOfIpv6Addresses;
     IPV6_RAW_ADDRESS                *ipv6AddressPool;
 } CONFIG_CTX, *PCONFIG_CTX;
 #pragma pack(pop)
@@ -54,6 +54,11 @@ typedef struct _config_ctx {
 // Initialize the default configuration
 //
 ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, CONFIG_CTX **cfgCtx);
+
+//
+// Append a new blocklist array to the config
+//
+ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size_t bufLen);
 
 //
 // Free the config context structure

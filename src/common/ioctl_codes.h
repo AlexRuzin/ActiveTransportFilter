@@ -39,3 +39,24 @@
 //
 #define IOCTL_ATF_SEND_WFP_CONFIG \
     CTL_CODE(FILE_DEVICE_UNKNOWN, 0x804, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+
+//
+// Add blacklist IP call
+//  This call will send an array of ipv4 addresses to be blacklisted by the filter. The IPs are supplied
+//  by a blacklist from a DNSBL or IP blocklist, and sent in big-endian format to the filter device.
+// 
+// Note: this call can be invoked multiple times, if the blacklist is too large, each subsequent call will
+//  append IPs into the driver's memory until complete. From there, to start the engine, call on
+//  the start WFP call (IOCTL_ATF_WFP_SERVICE_START)
+// 
+// Note: Before this call can succeed, a default config must be set, so IOCTL_ATF_SEND_WFP_CONFIG
+//  needs to be called.
+// 
+// If there exists a running filter.c version, then the service must be stopped, config must be flushed,
+//  (IOCTL_ATF_FLUSH_CONFIG), new config added, new blacklist IPs added, and service must be started
+//  (IOCTL_ATF_WFP_SERVICE_START)
+//
+#define IOCTL_ATF_APPEND_IPV4_BLACKLIST \
+    CTL_CODE(FILE_DEVICE_UNKNOWN, 0x805, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
+
+//EOF

@@ -42,7 +42,7 @@ static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *
 //
 // Sort IP address pool in ascending order
 //
-static VOID AtfConfigSortIpv4List(USER_DRIVER_FILTER_TRANSPORT_DATA *data);
+static VOID AtfConfigSortIpv4List(struct in_addr *buf);
 
 //
 // Create the default config
@@ -76,7 +76,7 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     out->numOfIpv6Addresses                     = data->numOfIpv6Addresses;
 
     if (out->numOfIpv4Addresses) {
-        const UINT32 sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(struct in_addr);
+        const size_t sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(struct in_addr);
         out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv4Pool);
         if (!out) {
             ATF_FREE(out);
@@ -87,7 +87,7 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     }
 
     if (out->numOfIpv6Addresses) {
-        const UINT32 sizeOfIpv6Pool = out->numOfIpv6Addresses * sizeof(IPV6_RAW_ADDRESS);
+        const size_t sizeOfIpv6Pool = out->numOfIpv6Addresses * sizeof(IPV6_RAW_ADDRESS);
         out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv6Pool);
         if (!out) {
             if (out->ipv4AddressPool) {
@@ -105,11 +105,57 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     return ATF_ERROR_OK;
 }
 
-static VOID AtfConfigSortIpv4List(USER_DRIVER_FILTER_TRANSPORT_DATA *data)
+//
+// Append a new blocklist array to the config
+//
+ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size_t bufLen)
 {
-    if (!data || !data->ipv4BlackList || !data->numOfIpv4Addresses) {
+    ATF_ERROR atfError = ATF_ERROR_OK;
+
+    if (!ctx || !blacklist || !bufLen || bufLen % sizeof(struct in_addr)) {
+        return ATF_BAD_PARAMETERS;
+    }
+
+    if (bufLen > BLACKLIST_IPV4_MAX_SIZE) {
+        return ATF_IOCTL_BUFFER_TOO_LARGE;
+    }
+
+    if (ctx->ipv4AddressPool) {
+        //Append
+        struct in_addr *newPool = ATF_MALLOC(bufLen + (ctx->numOfIpv4Addresses * sizeof(struct in_addr)));
+        if (!newPool) {
+            return ATF_NO_MEMORY_AVAILABLE;
+        }
+
+        RtlCopyMemory(newPool, ctx->ipv4AddressPool, (ctx->numOfIpv4Addresses * sizeof(struct in_addr)));
+        RtlCopyMemory(&newPool[ctx->numOfIpv4Addresses], blacklist, bufLen);
+
+        ATF_FREE(ctx->ipv4AddressPool);
+        ctx->ipv4AddressPool = newPool;
+        ctx->numOfIpv4Addresses += bufLen / sizeof(struct in_addr);
+
+    } else {
+        //Assign
+        ctx->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(bufLen);
+        if (!ctx->ipv4AddressPool) {
+            return ATF_NO_MEMORY_AVAILABLE;
+        }
+
+        RtlCopyMemory(ctx->ipv4AddressPool, blacklist, bufLen);
+    }
+
+    //Sort
+    AtfConfigSortIpv4List(ctx->ipv4AddressPool);
+
+    return atfError;
+}
+
+static VOID AtfConfigSortIpv4List(struct in_addr *buf)
+{
+    if (!buf) {
         return;
     }
+
 
 
 }
