@@ -47,8 +47,9 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     if (!cfgCtx) {
         return ATF_BAD_PARAMETERS;
     }
-
     *cfgCtx = NULL;
+
+    ATF_ERROR atfError = ATF_ERROR_OK;
 
     if (!AtfIniConfigSanityCheck(data)) {
         return ATF_CORRUPT_CONFIG;
@@ -79,6 +80,21 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
         }
 
         RtlCopyMemory(out->ipv4AddressPool, data->ipv4BlackList, sizeOfIpv4Pool);
+
+        DbgBreakPoint();
+        atfError = AtfIpv4TrieAllocCtx(&out->ipv4TrieCtx);
+        if (atfError) {
+            return atfError;
+        }
+
+        atfError = AtfIpv4TrieInsertPool(
+            out->ipv4TrieCtx, 
+            (const struct in_addr *)out->ipv4AddressPool, 
+            out->numOfIpv4Addresses
+        );
+        if (atfError) {
+            return atfError;
+        }
     }
 
     if (out->numOfIpv6Addresses) {
@@ -157,7 +173,23 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size
 
 VOID AtfFreeConfig(CONFIG_CTX *ctx)
 {
-    UNREFERENCED_PARAMETER(ctx);
+    if (!ctx) {
+        return;
+    }
+
+    // Free the trie
+    AtfIpv4TrieFree(&ctx->ipv4TrieCtx);
+    
+    // Free IP pools
+    if (ctx->ipv4AddressPool) {
+        ATF_FREE(ctx->ipv4AddressPool);
+    }
+
+    if (ctx->ipv4AddressPool) {
+        ATF_FREE(ctx->ipv6AddressPool);
+    }
+
+    ATF_FREE(ctx);
 }
 
 static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *data)

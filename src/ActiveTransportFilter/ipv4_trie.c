@@ -8,8 +8,6 @@
 #include "mem.h"
 #include "trace.h"
 
-#define IPV4_TRIE_SIZE (_UI8_MAX * sizeof(VOID *))
-
 ATF_ERROR AtfIpv4TrieAllocCtx(IPV4_TRIE_CTX **ctxOut)
 {
     IPV4_TRIE_CTX *ctx = (IPV4_TRIE_CTX *)ATF_MALLOC(sizeof(IPV4_TRIE_CTX));
@@ -17,7 +15,7 @@ ATF_ERROR AtfIpv4TrieAllocCtx(IPV4_TRIE_CTX **ctxOut)
         return ATF_NO_MEMORY_AVAILABLE;
     }
 
-    ctx->root = (IPV4_OCTET *)ATF_MALLOC(IPV4_TRIE_SIZE);
+    ctx->root = ATF_MALLOC(IPV4_TRIE_SIZE);
     if (!ctx) {
         ATF_FREE(ctx);
         return ATF_NO_MEMORY_AVAILABLE;
@@ -37,7 +35,7 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
         return ATF_BAD_PARAMETERS;
     }
 
-    IPV4_OCTET *currTrieArray = ctx->root;
+    VOID **currTrieArray = ctx->root;
 
     // Iterate through the input pool
     for (size_t currIp = 0; currIp < numOfIps; currIp++) {
@@ -50,13 +48,14 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
 
             // If we've reached the last octet, add a -1 (ipEndMarker)
             if (octetCount == 3) {
-                currTrieArray[currOctet] = (IPV4_OCTET)ipEndMarker;
+                //*(VOID *)(((DWORD_PTR)currTrieArray + currOctet * sizeof(VOID *))) = ipEndMarker;
+                currTrieArray[currOctet] = ipEndMarker;
                 break;
             }
 
             // Add the new trie, if necessary
             if (currTrieArray[currOctet] == 0) {
-                currTrieArray[currOctet] = ATF_MALLOC(IPV4_TRIE_SIZE);
+                currTrieArray[currOctet] = (IPV4_OCTET *)ATF_MALLOC(IPV4_TRIE_SIZE);
                 if (!currTrieArray[currOctet]) {
                     return ATF_NO_MEMORY_AVAILABLE;
                 }
@@ -70,11 +69,13 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
     }
 
     ctx->totalNumOfIps += numOfIps;
+
+    return ATF_ERROR_OK;
 }
 
-VOID AtfIpv4TrieFree(IPV4_TRIE_CTX **root)
+VOID AtfIpv4TrieFree(IPV4_TRIE_CTX **ctx)
 {
-    if (*root) {
+    if (*ctx) {
         return;
     }
 
