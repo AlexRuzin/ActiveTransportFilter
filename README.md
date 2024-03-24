@@ -77,3 +77,9 @@ Issue is probably that WFP doesn't like locking in the callout functions, which 
 As a result, I cannot "dynamically" change the config for the filter engine, I need to stop WFP entirely, refresh the config, and restart WFP.
 
 **Update** removing the `KMUTEX` in the callout was the fix.
+
+### Example of Callout Handlers Working
+
+Below is Windbg in a remote kernel debugging instance (using hyper-v). Each packet is intercepted by the ATF driver and sent to the debugger using `trace.c`.
+
+<img src="docs/images/callout_example.png">
