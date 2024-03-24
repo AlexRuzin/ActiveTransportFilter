@@ -528,7 +528,7 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     data.dest = (IPV4_RAW_ADDRESS)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
 
     data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_PORT].value.uint16;
-    data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
+    data.destPort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
 
     atfError = AtfFilterCallbackTcpIpv4Inbound(&data);
     switch(atfError)
@@ -536,15 +536,23 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     case ATF_FILTER_SIGNAL_PASS:
     {
     
-    } break;
+    } 
+    break;
     case ATF_FILTER_SIGNAL_BLOCK:
     {
     
-    } break;
+    } 
+    break;
     case ATF_FILTER_SIGNAL_ALERT:
     {
     
-    } break;
+    } 
+    break;
+    case ATF_ERROR_OK:
+    {
+    
+    } 
+    break;
     default:
         ATF_ERROR(AtfFilterCallbackTcpIpv4Inbound, atfError);
         break;

@@ -113,6 +113,8 @@ VOID AtfIoDeviceControl(
     //
     KeWaitForSingleObject(&gIoctlLock, Executive, KernelMode, FALSE, NULL);
 
+    DbgBreakPoint();
+
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
     WDFDEVICE wdfDevice = WdfIoQueueGetDevice(queue);
