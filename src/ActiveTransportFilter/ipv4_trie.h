@@ -3,12 +3,13 @@
 #include <ntddk.h>
 
 #include <inaddr.h>
+#include <limits.h>
 
 #include "../common/errors.h"
 
 #include "mem.h"
 
-#define IPV4_TRIE_SIZE (_UI8_MAX * sizeof(VOID *))
+#define IPV4_TRIE_NODE_SIZE (_UI8_MAX * sizeof(VOID *))
 
 //
 // Sorted "patricia trie" for IPv4 addresses

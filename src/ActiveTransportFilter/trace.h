@@ -11,9 +11,9 @@
 
 
 //#define ATF_DEBUGAF(format, ...) KdPrint(__FUNCTION__, format, ##__VA_ARGS__)
+
+// TODO: refactor this, should contain a string prefix
 #define ATF_DEBUGA(format, ...) DbgPrintEx(DPFLTR_IHVDRIVER_ID, DPFLTR_INFO_LEVEL, format, ##__VA_ARGS__)
-
-
 
 #define ATF_DEBUG(function, x) KdPrint(("[atftrace] " __FUNCTION__ " - " #function " dbg: %s\n", x))
 #define ATF_DEBUGD(function, x) KdPrint(("[atftrace] " __FUNCTION__ " - " #function " dbg: %d\n", x))
