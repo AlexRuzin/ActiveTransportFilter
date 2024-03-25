@@ -59,7 +59,17 @@ inline std::string IsolateDomainFromUri(const std::string &uri) {
         offsetEnd = uri.length();
     }
 
-    return uri.substr(offset, offsetEnd - offset);
+    const std::string subdomain = uri.substr(offset, offsetEnd - offset);
+
+    std::vector<std::string> subdomainList = SplitStringByDelimiter(subdomain, '.');
+    if (subdomainList.size() == 2) {
+        return subdomain;
+    }
+
+    // We have a subdomain, remove it (or just grab the last two elements (domain and TLD)
+    std::string domain = subdomainList[subdomainList.size() - 2] + "." + subdomainList[subdomainList.size() - 1];
+
+    return domain;
 }
 
 //

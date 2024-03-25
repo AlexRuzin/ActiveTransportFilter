@@ -43,7 +43,7 @@ int CALLBACK WinMain(
     atfError = driverCommand.InitializeDriverComms();
     if (atfError) {
         LOG_ERROR("Failed to open connection to device: 0x%08x", atfError);
-        return atfError;
+        //return atfError;
     }
 
     std::unique_ptr<FilterConfig> filterConfig;

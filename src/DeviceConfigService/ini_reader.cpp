@@ -49,6 +49,8 @@ ATF_ERROR IpBlacklistItem::DownloadAndParseBlacklist(void)
         return atfError;
     }
 
+    LOG_DEBUG("parseBufIntoList() parsed blocklist: %s (%s) numOfIps: %d", blacklistName, uri, blacklist.size());
+
     return atfError;
 }
 
@@ -58,6 +60,8 @@ ATF_ERROR IpBlacklistItem::parseBufIntoList(
 )
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
+
+
     
     return atfError;
 }
