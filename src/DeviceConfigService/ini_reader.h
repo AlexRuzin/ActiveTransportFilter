@@ -13,6 +13,29 @@
 #include <cstring>
 #include <cstdint>
 
+//
+// Struct representing an IP blacklist from online
+//  Supplied by ipv4_blacklist_urls_simple in the INI file
+//
+class IpBlacklistItem {
+private:
+    const std::string                   blacklistName;
+    const std::string                   uri;
+
+public:
+    IpBlacklistItem(const std::string &blacklistName, const std::string &uri) :
+        uri(uri),
+        blacklistName(blacklistName)
+    {
+    
+    }
+
+    ~IpBlacklistItem(void)
+    {
+    
+    }
+};
+
 class FilterConfig {
 private:
     //
@@ -34,7 +57,15 @@ private:
 
     const std::string                           iniFilePath;
 
+    //
+    // Reader class instance is locked until this object is released
+    //
     INIReader                                   iniReader;
+
+    //
+    // Online IP blacklist
+    //
+    std::vector<IpBlacklistItem>                onlineIpBlacklists;
 
 public:
     FilterConfig(std::string &iniFilePath) :
@@ -82,6 +113,19 @@ public:
     void FlushIniFile(void);
 
 private:
+    //
+    // Parse the ipv4_blacklist_urls_simple object and download all IPs
+    //
+    ATF_ERROR parseOnlineIpBlacklists(void);
+
+    //
+    // Returns a vector for all keys in a given section
+    //
+    static inline const std::string sectionNameIpOnlineBlacklist = "ipv4_blacklist_urls_simple";
+    ATF_ERROR getIniValuesBySection(   
+        const std::string &sectionName, 
+        std::vector<std::string> &keyList) const;
+
     //
     // Parse the internal config into a the usermode to driver transport struct
     //

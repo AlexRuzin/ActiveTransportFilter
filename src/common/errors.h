@@ -16,8 +16,13 @@ typedef unsigned int ATF_ERROR;
 #define ATF_DEVICEIOCONTROL                     0x00000008
 #define ATF_WFP_NOT_RUNNING                     0x00000009
 #define ATF_WFP_ALREADY_RUNNING                 0x0000000a
-#define ATF_NO_INI_CONFIG                       0x0000000b
 #define ATF_DEFAULT_CONFIG_TOO_LARGE            0x0000000c
+
+//
+// ATF INI parser errors                        
+//
+#define ATF_NO_INI_CONFIG                       0x30000001
+#define ATF_BAD_INI_CONFIG                      0x30000002
 
 //
 // Driver ERRORS

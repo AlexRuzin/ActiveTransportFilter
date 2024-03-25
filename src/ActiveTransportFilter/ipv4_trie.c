@@ -40,7 +40,7 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
         struct in_addr ip;
         ip.S_un.S_addr = pool[currIp].S_un.S_addr;
 
-        VOID **currTrieArray = ctx->root;
+        VOID **currTrieNode = ctx->root;
 
         // Iterate through each octet and insert trie at the corresponding index (octet)        
         for (UINT8 octetCount = 0; octetCount < sizeof(struct in_addr); octetCount++) {
@@ -48,14 +48,14 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
 
             // If we've reached the last octet, add a -1 (ipEndMarker)
             if (octetCount == 3) {
-                currTrieArray[currOctet] = ipEndMarker;
+                currTrieNode[currOctet] = ipEndMarker;
                 break;
             }
 
             // Add the new trie, if necessary
-            if (currTrieArray[currOctet] == 0) {
-                currTrieArray[currOctet] = (IPV4_OCTET *)ATF_MALLOC(IPV4_TRIE_NODE_SIZE);
-                if (!currTrieArray[currOctet]) {
+            if (currTrieNode[currOctet] == 0) {
+                currTrieNode[currOctet] = (IPV4_OCTET *)ATF_MALLOC(IPV4_TRIE_NODE_SIZE);
+                if (!currTrieNode[currOctet]) {
                     return ATF_NO_MEMORY_AVAILABLE;
                 }
 
@@ -63,13 +63,38 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
             }
 
             // Iterate into the next trie
-            currTrieArray = currTrieArray[currOctet];
+            currTrieNode = currTrieNode[currOctet];
         }
     }
 
     ctx->totalNumOfIps += numOfIps;
 
     return ATF_ERROR_OK;
+}
+
+BOOLEAN AtfIpv4TrieSearch(IPV4_TRIE_CTX *ctx, struct in_addr ip)
+{
+    if (!ctx || !ctx->totalNumOfIps) {
+        return FALSE;
+    }
+
+    VOID **currTrieNode = ctx->root;
+
+    for (UINT8 octetCount = 0; octetCount < sizeof(struct in_addr); octetCount++) {
+        const IPV4_OCTET octet = (ip.S_un.S_addr >> (octetCount * 8)) & 0xff;
+
+        if (currTrieNode[octet] == NULL) {
+            return FALSE;
+        }
+
+        // Just to be "safe", as the ipEndMarker pointer is invalid
+        if (currTrieNode[octet] != ipEndMarker) {
+            currTrieNode = currTrieNode[octet];
+        }            
+    }
+
+    // All nodes
+    return TRUE;
 }
 
 // Free prototype

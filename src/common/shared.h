@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <vector>
+#include <algorithm>
 
 #include <stdint.h>
 
@@ -38,6 +39,27 @@ inline std::vector<std::string> SplitStringByDelimiter(const std::string str, ch
     }
 
     return out;
+}
+
+//
+// Isolate the domain name from a URI
+//
+inline std::string IsolateDomainFromUri(const std::string &uri) {
+    static const std::string schemaMatch = "://";
+
+    size_t offset = uri.find(schemaMatch);
+    if (offset == std::string::npos) {
+        return "";
+    }
+
+    offset += schemaMatch.size();
+
+    size_t offsetEnd = uri.find_first_of(":/?#", offset);
+    if (offsetEnd == std::string::npos) {
+        offsetEnd = uri.length();
+    }
+
+    return uri.substr(offset, offsetEnd - offset);
 }
 
 //

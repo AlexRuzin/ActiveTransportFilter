@@ -13,6 +13,7 @@
 
 #include <string>
 #include <vector>
+#include <map>
 #include <cstring>
 #include <cstdint>
 
@@ -22,7 +23,6 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
 {
     static const std::string unknownVal = "UNKNOWN";
     static const char standardDelimiter = ',';
-
 
     // Parse all values
     enableLayerIpv4TcpInbound = iniReader.GetBoolean("wfp_layer", "enable_layer_inbound_tcp_v4", false);
@@ -55,6 +55,14 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
         }
     }
 
+    //
+    // Parse the online IP blacklists
+    //
+    ATF_ERROR atfError = parseOnlineIpBlacklists();
+    if (atfError) {
+        LOG_ERROR("Failed to parse online IP blacklist: 0x%08x", atfError);
+    }
+
     genIoctlStruct();
 
     lastIniSum = shared::Crc32SumFile(iniFilePath);
@@ -66,6 +74,50 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
 const USER_DRIVER_FILTER_TRANSPORT_DATA &FilterConfig::GetRawFilterData(void) const
 {
     return rawTransportData;
+}
+
+ATF_ERROR FilterConfig::getIniValuesBySection(
+    const std::string &sectionName, 
+    std::vector<std::string> &keyList) const
+{
+    if (!iniReader.HasSection(sectionName)) {
+        return ATF_BAD_INI_CONFIG;
+    }
+
+    return ATF_ERROR_OK;
+}
+
+ATF_ERROR FilterConfig::parseOnlineIpBlacklists(void)
+{
+    static const std::string unknownVal = "UNKNOWN";
+    static const char standardDelimiter = ',';
+
+    ATF_ERROR atfError = ATF_ERROR_OK;
+
+    const std::string ipUriUnparsed = iniReader.GetString("ipv4_blacklist_urls_simple", "online_ip_blocklists", unknownVal);
+    if (ipUriUnparsed == unknownVal) {
+        // Can be optionally removed
+        return ATF_ERROR_OK;
+    }
+
+    const std::vector<std::string> splitUris = shared::SplitStringByDelimiter(ipUriUnparsed, standardDelimiter);
+    if (!splitUris.size()) {
+        return ATF_ERROR_OK;    
+    }
+
+    std::map<std::string, std::string> nameUriMap;
+    for (std::vector<std::string>::const_iterator i = splitUris.begin(); i != splitUris.end(); i++) {
+        nameUriMap[shared::IsolateDomainFromUri(*i)] = *i;
+    }
+
+    // Initialize the blacklist objects
+    for (std::map<std::string, std::string>::const_iterator i = nameUriMap.begin(); i != nameUriMap.end(); i++) {
+        if (i->first != "") {
+            onlineIpBlacklists.push_back({i->first, i->second});
+        }
+    }
+
+    return atfError;
 }
 
 void FilterConfig::genIoctlStruct(void)

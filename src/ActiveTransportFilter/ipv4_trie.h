@@ -53,6 +53,11 @@ ATF_ERROR AtfIpv4TrieAllocCtx(IPV4_TRIE_CTX **ctxOut);
 ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, size_t numOfIps);
 
 //
+// Search the tree for a single input IP
+//
+BOOLEAN AtfIpv4TrieSearch(IPV4_TRIE_CTX *ctx, struct in_addr ip);
+
+//
 // Print trie context info
 //
 VOID AtfIpv4TriePrintCtx(const IPV4_TRIE_CTX *ctx);
