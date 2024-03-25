@@ -39,13 +39,13 @@ const std::string &IoctlComm::GetLogicalDeviceFileName(void) const
     return driverLogicalDevicePath;
 }
 
-ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte> &rawBuffer) const
+ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, const void *ptr, size_t size) const
 {
     if (driverHandle == INVALID_HANDLE_VALUE) {
         return ATF_FAILED_HANDLE_NOT_OPENED;
     }
 
-    if (rawBuffer.size() == 0) {
+    if (!size) {
         return ATF_BAD_PARAMETERS;
     }
 
@@ -54,8 +54,8 @@ ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte>
     if (!DeviceIoControl(
         driverHandle,
         ioctl,
-        static_cast<void *>(rawBuffer.data()),
-        (DWORD)rawBuffer.size(),
+        const_cast<void *>(ptr),
+        (DWORD)size,
         NULL,
         0,
         &bytesReturned,
@@ -66,6 +66,19 @@ ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte>
     }
 
     return ATF_ERROR_OK;
+}
+
+ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte> &rawBuffer) const
+{
+    if (driverHandle == INVALID_HANDLE_VALUE) {
+        return ATF_FAILED_HANDLE_NOT_OPENED;
+    }
+
+    if (rawBuffer.size() == 0) {
+        return ATF_BAD_PARAMETERS;
+    }    
+
+    return SendRawBufferIoctl(ioctl, rawBuffer.data(), rawBuffer.size());
 }
 
 ATF_ERROR IoctlComm::SendIoctlNoData(IOCTL_CODE ioctl) const

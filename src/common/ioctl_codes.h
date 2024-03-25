@@ -45,6 +45,8 @@
 //  This call will send an array of ipv4 addresses to be blacklisted by the filter. The IPs are supplied
 //  by a blacklist from a DNSBL or IP blocklist, and sent in big-endian format to the filter device.
 // 
+// Note: The WFP service must be stopped (IOCTL_ATF_WFP_SERVICE_STOP) before this call can succeed
+// 
 // Note: this call can be invoked multiple times, if the blacklist is too large, each subsequent call will
 //  append IPs into the driver's memory until complete. From there, to start the engine, call on
 //  the start WFP call (IOCTL_ATF_WFP_SERVICE_START)

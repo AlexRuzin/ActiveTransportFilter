@@ -58,6 +58,7 @@ public:
     // Send a raw buffer to the device driver
     //
     ATF_ERROR SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte> &rawBuffer) const;
+    ATF_ERROR SendRawBufferIoctl(IOCTL_CODE ioctl, const void *ptr, size_t size) const;
 
     //
     // Send a raw IOCTL, without any input or output buffer

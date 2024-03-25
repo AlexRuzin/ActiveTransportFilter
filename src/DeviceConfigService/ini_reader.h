@@ -2,6 +2,8 @@
 
 #include <Windows.h>
 
+#include <inaddr.h>
+
 #include <INIReader.h>
 
 #include "../common/errors.h"
@@ -12,6 +14,7 @@
 #include <vector>
 #include <cstring>
 #include <cstdint>
+#include <memory>
 
 //
 // Struct representing an IP blacklist from online
@@ -19,8 +22,12 @@
 //
 class IpBlacklistItem {
 private:
-    const std::string                   blacklistName;
-    const std::string                   uri;
+    const std::string                           blacklistName;
+    const std::string                           uri;
+
+    std::vector<struct in_addr>                 blacklist;
+
+    std::vector<char>                           rawDownloadBuffer;
 
 public:
     IpBlacklistItem(const std::string &blacklistName, const std::string &uri) :
@@ -34,6 +41,32 @@ public:
     {
     
     }
+
+    ATF_ERROR DownloadAndParseBlacklist(void);
+
+private:
+    //
+    // CURL download
+    //
+    ATF_ERROR downloadBlocklist(
+        const std::string &uri, 
+        std::vector<char> &rawBufOut) const;
+
+    static size_t curlWriteCallback(
+        const char *buf,
+        size_t bufSize,
+        size_t nmemb,
+        std::vector<char> *out
+    );
+
+
+    //
+    // Parse CURL output buffer into std::vector<struct in_addr>
+    //
+    ATF_ERROR parseBufIntoList(
+        const std::vector<char> &buf, 
+        std::vector<struct in_addr> &ipOut
+    );
 };
 
 class FilterConfig {
@@ -106,11 +139,6 @@ public:
     // Returns whether or not the USER_DRIVER_FILTER_TRANSPORT_DATA structure is initialized
     //
     bool IsIniDataInitialized(void) const;
-
-    //
-    // Flushes the current ini file
-    //
-    void FlushIniFile(void);
 
 private:
     //

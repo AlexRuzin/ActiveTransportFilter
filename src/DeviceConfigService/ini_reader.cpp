@@ -3,6 +3,7 @@
 #pragma comment(lib, "Ws2_32.lib")
 
 #include <INIReader.h>
+#include <curl/curl.h>
 
 #include "ini_reader.h"
 
@@ -17,8 +18,110 @@
 #include <cstring>
 #include <cstdint>
 
+//
+// Global init for CURL
+//  TODO: Global cleanup for CURL (on shutdown)
+//
+static bool globalCurlInit = false;
+
+//
+// IpBlacklistItem class methods
+//
+
+//
+// Dispatch to downloadBlocklist() and parseBlocklist()
+//
+ATF_ERROR IpBlacklistItem::DownloadAndParseBlacklist(void)
+{
+    ATF_ERROR atfError = ATF_ERROR_OK;
+
+    atfError = downloadBlocklist(uri, rawDownloadBuffer);
+    if (atfError) {
+        LOG_ERROR("downloadBlocklist() failed for blocklist: %s (%s), error: 0x%08x", blacklistName, uri, atfError);
+        return atfError;
+    }
+
+    LOG_DEBUG("downloadBlocklist() downloaded blocklist: %s (%s) size: %d", blacklistName, uri, rawDownloadBuffer.size());
+
+    atfError = parseBufIntoList(rawDownloadBuffer, blacklist);
+    if (atfError) {
+        LOG_ERROR("parseBufIntoList() failed for blocklist: %s (%s), error: 0x%08x", blacklistName, uri, atfError);
+        return atfError;
+    }
+
+    return atfError;
+}
+
+ATF_ERROR IpBlacklistItem::parseBufIntoList(
+    const std::vector<char> &buf, 
+    std::vector<struct in_addr> &ipOut
+)
+{
+    ATF_ERROR atfError = ATF_ERROR_OK;
+    
+    return atfError;
+}
 
 
+ATF_ERROR IpBlacklistItem::downloadBlocklist(
+    const std::string &uri, 
+    std::vector<char> &rawBufOut) const
+{
+    ATF_ERROR atfError = ATF_ERROR_OK;
+
+    if (!globalCurlInit) {
+        curl_global_init(CURL_GLOBAL_ALL);
+        globalCurlInit = true;
+    }
+
+    CURL *curl = curl_easy_init();
+    if (!curl) {
+        return ATF_CURL_INIT;
+    }
+
+    curl_easy_setopt(curl, CURLOPT_URL, uri.c_str());
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curlWriteCallback);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &rawBufOut);
+    curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // Follow redirects
+
+    CURLcode curlRes = curl_easy_perform(curl);
+    curl_easy_cleanup(curl);
+    
+    if (curlRes != CURLE_OK) {
+        LOG_ERROR("curl failed: 0x%08x", curlRes);
+        atfError = ATF_CURL_DOWNLOAD;
+    }
+
+    return atfError;
+}
+
+//
+// CURL callback function
+//
+size_t IpBlacklistItem::curlWriteCallback(
+    const char *buf,
+    size_t bufSize,
+    size_t nmemb,
+    std::vector<char> *out
+)
+{
+    const size_t totalBytes = bufSize * nmemb;
+   
+    for (size_t i = 0; i < totalBytes; i++) {
+        
+        out->push_back(buf[i]);
+    }    
+
+    return totalBytes;
+}
+
+//
+// FilterConfig class
+//
+
+//
+// Parse the ini file
+//
 ATF_ERROR FilterConfig::ParseIniFile(void)
 {
     static const std::string unknownVal = "UNKNOWN";
@@ -117,7 +220,22 @@ ATF_ERROR FilterConfig::parseOnlineIpBlacklists(void)
         }
     }
 
-    return atfError;
+    // Download and parse each IP blocklist
+    bool anyBlacklistAvail = false;
+    for (std::vector<IpBlacklistItem>::iterator currBlacklist = onlineIpBlacklists.begin(); 
+        currBlacklist != onlineIpBlacklists.end(); currBlacklist++)
+    {
+        atfError = currBlacklist->DownloadAndParseBlacklist();
+        if (!atfError) {            
+            anyBlacklistAvail = true;
+        }
+    }
+
+    if (anyBlacklistAvail) {
+        return ATF_ERROR_OK;
+    }
+
+    return ATF_NO_BLACKLISTS_AVAIL;
 }
 
 void FilterConfig::genIoctlStruct(void)
@@ -152,7 +270,3 @@ bool FilterConfig::IsIniDataInitialized(void) const
         rawTransportData.size == sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
 }
 
-void FilterConfig::FlushIniFile(void)
-{
-    ZeroMemory(&rawTransportData, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
-}

@@ -73,8 +73,8 @@ ATF_ERROR DriverCommand::CmdFlushConfig(void) const
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    if (!wfpRunning) {
-        return ATF_WFP_NOT_RUNNING;
+    if (wfpRunning) {
+        return ATF_WFP_ALREADY_RUNNING;
     }
 
     return ioctlComm->SendIoctlNoData(IOCTL_ATF_FLUSH_CONFIG);
@@ -83,6 +83,11 @@ ATF_ERROR DriverCommand::CmdFlushConfig(void) const
 ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfig) const
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
+
+    // WFP engine cannot be running while sending commands to filter.c
+    if (wfpRunning) {
+        return ATF_WFP_ALREADY_RUNNING;
+    }
 
     if (!filterConfig.IsIniDataInitialized()) {
         return ATF_NO_INI_CONFIG;
@@ -94,4 +99,22 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfi
     }
 
     return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_SEND_WFP_CONFIG, configSerialized);
+}
+
+ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(const std::vector<struct in_addr> &blacklist) const
+{
+    if (!blacklist.size()) {
+        return ATF_NO_DATA_AVAILABLE;
+    }
+
+    // WFP engine cannot be running while sending commands to filter.c
+    if (wfpRunning) {
+        return ATF_WFP_ALREADY_RUNNING;
+    }
+
+    const size_t totalSize = blacklist.size() * sizeof(struct in_addr);
+    std::vector<std::byte> rawBuf(totalSize);
+    CopyMemory(rawBuf.data(), blacklist.data(), blacklist.size() * sizeof(struct in_addr));
+
+    return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_APPEND_IPV4_BLACKLIST, rawBuf);
 }
