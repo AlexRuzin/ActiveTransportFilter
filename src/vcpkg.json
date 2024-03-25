@@ -1,0 +1,10 @@
+{
+  "name": "active-transport-filter",
+  "version": "0.1.1",
+	
+  "dependencies": [
+    "fmt",
+    "curl",
+	"inih"
+  ]
+}
