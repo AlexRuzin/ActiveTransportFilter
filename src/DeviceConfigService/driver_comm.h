@@ -70,5 +70,8 @@ public:
     //
     static ATF_ERROR tryOpenDevicePath(const std::string &in);
 
+    //
+    // Is the object connected
+    //
     bool GetIsConnected(void) const;
 };

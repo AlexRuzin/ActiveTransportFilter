@@ -1,8 +1,8 @@
 #include <Windows.h>
 
-#pragma comment(lib, "Ws2_32.lib")
-
 #include <INIReader.h>
+
+#define CURL_STATICLIB 
 #include <curl/curl.h>
 
 #include "ini_reader.h"
@@ -17,6 +17,7 @@
 #include <map>
 #include <cstring>
 #include <cstdint>
+#include <sstream>
 
 //
 // Global init for CURL
@@ -37,19 +38,19 @@ ATF_ERROR IpBlacklistItem::DownloadAndParseBlacklist(void)
 
     atfError = downloadBlocklist(uri, rawDownloadBuffer);
     if (atfError) {
-        LOG_ERROR("downloadBlocklist() failed for blocklist: %s (%s), error: 0x%08x", blacklistName, uri, atfError);
+        LOG_ERROR("downloadBlocklist() failed for blocklist: %s , error: 0x%08x", blacklistName.c_str(), atfError);
         return atfError;
     }
 
-    LOG_DEBUG("downloadBlocklist() downloaded blocklist: %s (%s) size: %d", blacklistName, uri, rawDownloadBuffer.size());
+    LOG_DEBUG("downloadBlocklist() downloaded blocklist: %s size: %d bytes", blacklistName.c_str(), rawDownloadBuffer.size());
 
     atfError = parseBufIntoList(rawDownloadBuffer, blacklist);
     if (atfError) {
-        LOG_ERROR("parseBufIntoList() failed for blocklist: %s (%s), error: 0x%08x", blacklistName, uri, atfError);
+        LOG_ERROR("parseBufIntoList() failed for blocklist: %s, error: 0x%08x", blacklistName.c_str(), atfError);
         return atfError;
     }
 
-    LOG_DEBUG("parseBufIntoList() parsed blocklist: %s (%s) numOfIps: %d", blacklistName, uri, blacklist.size());
+    LOG_DEBUG("parseBufIntoList() parsed blocklist: %s numOfIps: %d", blacklistName.c_str(), blacklist.size());
 
     return atfError;
 }
@@ -61,11 +62,32 @@ ATF_ERROR IpBlacklistItem::parseBufIntoList(
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
+    const std::vector<std::string> ipList = shared::SplitStringByLine(rawDownloadBuffer);
+    if (!ipList.size()) {
+        return ATF_CURL_BAD_DATA;
+    }
 
+    for (std::vector<std::string>::const_iterator i = ipList.begin(); i != ipList.end(); i++) {
+        uint32_t ip;
+        if (shared::ParseStringToIpv4(*i, ip)) {
+            struct in_addr ipAddr;
+            ipAddr.S_un.S_addr = ip;
+            blacklist.push_back(ipAddr);
+        }
+    }
     
     return atfError;
 }
 
+const std::vector<struct in_addr> IpBlacklistItem::GetIps(void) const
+{
+    return blacklist;
+}
+
+const std::string IpBlacklistItem::GetName(void) const
+{
+    return blacklistName;
+}
 
 ATF_ERROR IpBlacklistItem::downloadBlocklist(
     const std::string &uri, 
@@ -88,6 +110,10 @@ ATF_ERROR IpBlacklistItem::downloadBlocklist(
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &rawBufOut);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L); // Follow redirects
 
+    static const std::string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, userAgent.c_str());
+
+
     CURLcode curlRes = curl_easy_perform(curl);
     curl_easy_cleanup(curl);
     
@@ -95,6 +121,8 @@ ATF_ERROR IpBlacklistItem::downloadBlocklist(
         LOG_ERROR("curl failed: 0x%08x", curlRes);
         atfError = ATF_CURL_DOWNLOAD;
     }
+
+    LOG_DEBUG("CURL returned buffer size: %d bytes", rawDownloadBuffer.size());
 
     return atfError;
 }
@@ -183,6 +211,11 @@ const USER_DRIVER_FILTER_TRANSPORT_DATA &FilterConfig::GetRawFilterData(void) co
     return rawTransportData;
 }
 
+const std::vector<struct in_addr> &FilterConfig::GetIpv4BlacklistOnline(void) const
+{
+    return blocklistIpv4Online;
+}
+
 ATF_ERROR FilterConfig::getIniValuesBySection(
     const std::string &sectionName, 
     std::vector<std::string> &keyList) const
@@ -232,6 +265,12 @@ ATF_ERROR FilterConfig::parseOnlineIpBlacklists(void)
         atfError = currBlacklist->DownloadAndParseBlacklist();
         if (!atfError) {            
             anyBlacklistAvail = true;
+        }
+
+        const std::vector<struct in_addr> &ipList = currBlacklist->GetIps();
+        if (ipList.size()) {
+            LOG_DEBUG("Downloaded blacklist IPs (ipv4) from %s (numOfIps: %d)", currBlacklist->GetName().c_str(), ipList.size());
+            blocklistIpv4Online.insert(blocklistIpv4Online.end(), ipList.begin(), ipList.end());
         }
     }
 

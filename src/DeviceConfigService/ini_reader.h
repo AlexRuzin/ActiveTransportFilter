@@ -25,8 +25,10 @@ private:
     const std::string                           blacklistName;
     const std::string                           uri;
 
+    // Parsed IPv4 addresses
     std::vector<struct in_addr>                 blacklist;
 
+    // Raw output vector from CURL
     std::vector<char>                           rawDownloadBuffer;
 
 public:
@@ -67,6 +69,17 @@ private:
         const std::vector<char> &buf, 
         std::vector<struct in_addr> &ipOut
     );
+
+public:
+    //
+    // Return the ip list
+    //
+    const std::vector<struct in_addr> GetIps(void) const;
+
+    //
+    // Return blocklist domain
+    //
+    const std::string GetName(void) const;
 };
 
 class FilterConfig {
@@ -82,8 +95,12 @@ private:
     bool                                        enableLayerIpv6TcpOutbound;
     bool                                        enableLayerIcmpv4;
 
+    // Blacklist from the default ini config ONLY
     std::vector<struct in_addr>                 blocklistIpv4;
     std::vector<IPV6_RAW_ADDRESS>               blocklistIpv6;
+
+    // Blacklist from the additional, dynamic/online IP blocklists
+    std::vector<struct in_addr>                 blocklistIpv4Online;
 
 
     USER_DRIVER_FILTER_TRANSPORT_DATA           rawTransportData;
@@ -134,6 +151,11 @@ public:
     // Return the raw filter config, which will be transported to the driver
     //
     const USER_DRIVER_FILTER_TRANSPORT_DATA &GetRawFilterData(void) const;
+
+    //
+    // Returns the vector containing IPs retrieved from online blacklists
+    //
+    const std::vector<struct in_addr> &GetIpv4BlacklistOnline(void) const;
 
     //
     // Returns whether or not the USER_DRIVER_FILTER_TRANSPORT_DATA structure is initialized

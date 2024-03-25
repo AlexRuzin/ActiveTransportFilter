@@ -1,5 +1,8 @@
 #include <Windows.h>
 
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "libcurl.lib")
+
 #include "main.h"
 #include "config_service.h"
 #include "driver_command.h"
@@ -53,9 +56,15 @@ int CALLBACK WinMain(
         return atfError;
     }
 
-    atfError = driverCommand.CmdSendIniConfiguration(*filterConfig);
+    //atfError = driverCommand.CmdSendIniConfiguration(*filterConfig);
     if (atfError) {
         LOG_ERROR("Failed to send ini command (0x%08x)", atfError);
+        return atfError;
+    }
+
+    atfError = driverCommand.CmdAppendIpv4Blacklist(*filterConfig);
+    if (atfError) {
+        LOG_ERROR("Failed to append ipv4 blacklist (0x%08x)", atfError);
         return atfError;
     }
 

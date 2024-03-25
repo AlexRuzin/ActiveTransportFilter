@@ -18,6 +18,7 @@ typedef unsigned int ATF_ERROR;
 #define ATF_WFP_ALREADY_RUNNING                 0x0000000a
 #define ATF_DEFAULT_CONFIG_TOO_LARGE            0x0000000c
 #define ATF_NO_DATA_AVAILABLE                   0x0000000d
+#define ATF_DEVICE_NOT_CONNECTED                0x0000000e
 
 //
 // ATF INI parser errors                        
@@ -27,6 +28,7 @@ typedef unsigned int ATF_ERROR;
 #define ATF_NO_BLACKLISTS_AVAIL                 0x30000003
 #define ATF_CURL_INIT                           0x30000004
 #define ATF_CURL_DOWNLOAD                       0x30000005
+#define ATF_CURL_BAD_DATA                       0x30000006
 
 //
 // Driver ERRORS

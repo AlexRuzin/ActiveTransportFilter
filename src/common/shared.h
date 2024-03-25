@@ -28,6 +28,30 @@ inline bool IsFileExists(std::string filepath)
     return std::filesystem::exists(fsPath);
 }
 
+//
+// Used to parse an IP blacklist, where each IP is delimited by a \n
+//
+inline std::vector<std::string> SplitStringByLine(const std::string &in)
+{
+    std::istringstream iss(in);
+
+    std::vector<std::string> out;
+
+    std::string line;
+    while (std::getline(iss, line)) {
+        if (!line.empty()) {
+            out.push_back(line);
+        }
+    }
+
+    return out;
+}
+inline std::vector<std::string> SplitStringByLine(const std::vector<char> &in) 
+{
+    const std::string inBufStr(in.begin(), in.end());
+    return SplitStringByLine(inBufStr);
+}
+
 inline std::vector<std::string> SplitStringByDelimiter(const std::string str, char delimiter) {
     std::vector<std::string> out;
 

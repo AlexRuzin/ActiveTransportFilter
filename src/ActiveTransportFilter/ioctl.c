@@ -167,6 +167,15 @@ VOID AtfIoDeviceControl(
             );
         }
         break;
+
+    case IOCTL_ATF_APPEND_IPV4_BLACKLIST:
+        {
+            ntStatus = AtfHandlerAppendIpv4Blacklist(
+                request,
+                inputBufferLength
+            );
+        }
+        break;
     default:
         ntStatus = STATUS_INVALID_DEVICE_REQUEST;
         break;
@@ -338,6 +347,8 @@ static NTSTATUS AtfHandlerAppendIpv4Blacklist(
 )
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    DbgBreakPoint();
 
     if (IsWfpRunning()) {
         // WFP cannot be running when sending the blacklist

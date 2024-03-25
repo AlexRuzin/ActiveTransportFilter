@@ -13,6 +13,13 @@
 #include <string>
 #include <map>
 
+#if defined(_DEBUG)
+#undef OVERRIDE_CONN_REQ
+#if defined(OVERRIDE_CONN_REQ)
+#pragma message("WARNING: OVERRIDE_CONN_REQ is enabled!")
+#endif //OVERRIDE_CONN_REQ
+#endif _DEBUG
+
 //
 // IOCTL command wrapper (see ioctl_codes.h)
 //
@@ -79,5 +86,20 @@ public:
     // Command to append an IPv4 blacklist to the driver
     //  IOCTL_ATF_APPEND_IPV4_BLACKLIST
     //
-    ATF_ERROR CmdAppendIpv4Blacklist(const std::vector<struct in_addr> &blacklist) const;
+    ATF_ERROR CmdAppendIpv4Blacklist(const FilterConfig &filterConfig) const;
+
+private:
+    //
+    // Returns the device driver connection state (ready)
+    //  The state returns:
+    //   1) The IoctlComm object exists
+    //   2) The IoctlComm object is connected
+    //
+    bool isDeviceReady(void) const;
+
+    //
+    // Returns the state of the WFP engine
+    //  Config update commands require the engine to be in an OFF state
+    //
+    bool isWfpReady(void) const;
 };

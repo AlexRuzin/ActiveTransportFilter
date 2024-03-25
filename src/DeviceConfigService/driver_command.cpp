@@ -11,6 +11,8 @@
 #include <cstdint>
 #include <memory>
 
+#include <inaddr.h>
+
 ATF_ERROR DriverCommand::InitializeDriverComms(void)
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
@@ -37,7 +39,11 @@ ATF_ERROR DriverCommand::CmdStartWfp(void)
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    if (wfpRunning) {
+    if (!isDeviceReady()) {
+        return ATF_DEVICE_NOT_CONNECTED;
+    }
+
+    if (isWfpReady()) {
         return ATF_WFP_ALREADY_RUNNING;
     }
 
@@ -55,7 +61,11 @@ ATF_ERROR DriverCommand::CmdStopWfp(void)
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    if (!wfpRunning) {
+    if (!isDeviceReady()) {
+        return ATF_DEVICE_NOT_CONNECTED;
+    }
+
+    if (!isWfpReady()) {
         return ATF_WFP_NOT_RUNNING;
     }
 
@@ -73,7 +83,11 @@ ATF_ERROR DriverCommand::CmdFlushConfig(void) const
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    if (wfpRunning) {
+    if (!isDeviceReady()) {
+        return ATF_DEVICE_NOT_CONNECTED;
+    }
+
+    if (isWfpReady()) {
         return ATF_WFP_ALREADY_RUNNING;
     }
 
@@ -84,8 +98,12 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfi
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
+    if (!isDeviceReady()) {
+        return ATF_DEVICE_NOT_CONNECTED;
+    }
+
     // WFP engine cannot be running while sending commands to filter.c
-    if (wfpRunning) {
+    if (isWfpReady()) {
         return ATF_WFP_ALREADY_RUNNING;
     }
 
@@ -101,20 +119,51 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfi
     return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_SEND_WFP_CONFIG, configSerialized);
 }
 
-ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(const std::vector<struct in_addr> &blacklist) const
+ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(const FilterConfig &filterConfig) const
 {
-    if (!blacklist.size()) {
-        return ATF_NO_DATA_AVAILABLE;
+    if (!isDeviceReady()) {
+        return ATF_DEVICE_NOT_CONNECTED;
     }
 
     // WFP engine cannot be running while sending commands to filter.c
-    if (wfpRunning) {
+    if (isWfpReady()) {
         return ATF_WFP_ALREADY_RUNNING;
     }
 
-    const size_t totalSize = blacklist.size() * sizeof(struct in_addr);
+    const std::vector<struct in_addr> &list = filterConfig.GetIpv4BlacklistOnline();
+
+    if (!list.size()) {
+        return ATF_NO_DATA_AVAILABLE;
+    }
+
+    // Serialize the IP list into a raw buffer
+    const size_t totalSize = list.size() * sizeof(struct in_addr);
     std::vector<std::byte> rawBuf(totalSize);
-    CopyMemory(rawBuf.data(), blacklist.data(), blacklist.size() * sizeof(struct in_addr));
+    CopyMemory(rawBuf.data(), list.data(), list.size() * sizeof(struct in_addr));
 
     return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_APPEND_IPV4_BLACKLIST, rawBuf);
 }
+
+bool DriverCommand::isDeviceReady(void) const
+{
+#if defined(OVERRIDE_CONN_REQ) // Debug and testing only!
+    return true;
+#endif
+
+    if (!ioctlComm || !ioctlComm->GetIsConnected()) {
+        return false;
+    }
+
+    return true;
+}
+
+bool DriverCommand::isWfpReady(void) const
+{
+#if defined(OVERRIDE_CONN_REQ) // Debug and testing only!
+    return false;
+#endif
+
+    return wfpRunning;
+}
+
+//EOF
