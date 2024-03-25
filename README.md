@@ -2,11 +2,62 @@
 
 ### _This project is currently under development_
 
+## Table of Contents (TOC)
+
+- [Summary](#summary)
+- [Features and Requirements](#features-and-requirements)
+- [Directory summary](#directory-summary)
+- [`src` Directory](#-src--directory)
+- [ActiveTransportFilter Project UML diagram](#activetransportfilter-project-uml-diagram)
+- [ActiveTransportFilter (ATF) project summary](#activetransportfilter--atf--project-summary)
+  * [`DeviceConfigService`](#-deviceconfigservice-)
+  * [`ActiveTransportFilter`](#-activetransportfilter-)
+  * [`DriverController`](#-drivercontroller-)
+  * [The IPv4 filtering algorithm](#the-ipv4-filtering-algorithm)
+- [Interesting Fixes and Discoveries During Development](#interesting-fixes-and-discoveries-during-development)
+  * [Implement correct IRQL](#implement-correct-irql)
+  * [BSOD in flow after starting Opera](#bsod-in-flow-after-starting-opera)
+  * [Example of Callout Handlers Working](#example-of-callout-handlers-working)
+
+<small><i><a href='http://ecotrust-canada.github.io/markdown-toc/'>Table of contents generated with markdown-toc</a></i></small>
+
+
 ## Summary
 
 This is a project that I have started for educational purposes, please feel free to use it how you wish.
 
 `ActiveTransportFilter` is a device driver that makes use of the Windows Filtering Platform (WFP) for operating-system level **IP blacklisting**, **Domain level blacklisting**, and **packet inspection**. I have decided to first implement the **IP blacklisting** component, as this is simpler and will allow me to build the architecture necessary for implementing a more complex filter driver.
+
+## Features and Requirements
+* Uses `vcpkg` manifest, so `vcpkg` is required, along with VS2022
+* Compiled with Windows SDK 10.0.22621.2428
+* Driver is compiled with WinDDK 10.0.22621.2428
+* User-mode code is compiled with C++20
+* Statically linked libraries (for compatibility)
+
+## Directory summary
+* `.git` -> git directory
+* `/bin` -> output binary directory. The installer will be `/bin/DriverController.exe` (which contains all other components in the resource)
+* `/build` -> temporary build directory for objects and such
+* `/config` -> runtime configurations
+* `/docs` -> contains images and resources for `README.md`
+* `/src` -> Main source directory
+
+## `src` Directory
+
+| Filename                  | Description                                                                                                                                                                                                                                                                                                                                                        |
+|---------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ActiveTransportFilter/    | Driver project                                                                                                                                                                                                                                                                                                                                                     |
+| common/                   | The 'common' directory, containing inline headers and shared headers between user mode and kernel mode                                                                                                                                                                                                                                                             |
+| DeviceConfigService/      | Main Config service, configures and controls ActiveTransportFilter                                                                                                                                                                                                                                                                                                 |
+| DriverController/         | Project that generates the unified installer                                                                                                                                                                                                                                                                                                                       |
+| InterfaceConsole/         | A placeholder project for a usermode console that interfaces with DeviceConfigService                                                                                                                                                                                                                                                                              |
+| ActiveTransportFilter.sln | ActiveTransportFilter solutions file                                                                                                                                                                                                                                                                                                                               |
+| vcpkg.json                | Contains external dependencies (vcpkg)                                                                                                                                                                                                                                                                                                                             |
+| vcpkg-configuration.json  | vcpkg config file 
+
+## ActiveTransportFilter Project UML diagram
+_TODO_
 
 ## ActiveTransportFilter (ATF) project summary
 

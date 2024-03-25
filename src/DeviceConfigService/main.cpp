@@ -1,16 +1,19 @@
 #include <Windows.h>
 
-#pragma comment(lib, "Ws2_32.lib")
-#pragma comment(lib, "libcurl.lib")
+// Not needed to manually import, since this is all handled magically by vcpkg
+//#pragma comment(lib, "Ws2_32.lib")
+//#pragma comment(lib, "libcurl.lib")
+//#pragma comment(lib, "inih.lib")
 
 #include "main.h"
 #include "config_service.h"
 #include "driver_command.h"
+#include "ini_reader.h"
+
 #include "../common/user_logging.h"
 #include "../common/common.h"
 #include "../common/errors.h"
 #include "../common/shared.h"
-#include "ini_reader.h"
 
 #include <string>
 #include <vector>

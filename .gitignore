@@ -6,6 +6,9 @@
 # Temporary testing directory
 src/DriverController/atf_bin_directory/
 
+# We don't need the vcpkg temporary directory
+src/vcpkg_installed/
+
 # Remove binaries from /bin
 bin/*.sys
 bin/*.exe
