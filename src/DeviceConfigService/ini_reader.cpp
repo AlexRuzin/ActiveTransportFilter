@@ -313,3 +313,12 @@ bool FilterConfig::IsIniDataInitialized(void) const
         rawTransportData.size == sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
 }
 
+const std::string &FilterConfig::GetIniFilepath(void) const
+{
+    return iniFilePath;
+}
+
+size_t FilterConfig::GetNumOfIpv4BlacklistIps(void) const
+{
+    return onlineIpBlacklists.size();
+}

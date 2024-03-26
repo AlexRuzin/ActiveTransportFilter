@@ -102,9 +102,14 @@ private:
     // Blacklist from the additional, dynamic/online IP blocklists
     std::vector<struct in_addr>                 blocklistIpv4Online;
 
-
+    //
+    // Transport buffer for IOCTL
+    //
     USER_DRIVER_FILTER_TRANSPORT_DATA           rawTransportData;
 
+    //
+    // Ini filepath
+    //
     const std::string                           iniFilePath;
 
     //
@@ -161,6 +166,14 @@ public:
     // Returns whether or not the USER_DRIVER_FILTER_TRANSPORT_DATA structure is initialized
     //
     bool IsIniDataInitialized(void) const;
+
+    // Get the ini filepath
+    const std::string &GetIniFilepath(void) const;
+
+    //
+    // Get number of IPs in ipv4 online blacklist
+    //
+    size_t GetNumOfIpv4BlacklistIps(void) const;
 
 private:
     //

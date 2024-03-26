@@ -166,8 +166,20 @@ ATF_ERROR doConfigServiceStartup(void)
         return ATF_FAILED_PROC_CREATE;
     }
 
-    LOG_INFO("Created config service. PID: %d", procInfo.dwProcessId);
+    Sleep(5000);
 
+    DWORD exitCode = 0;
+    if (!GetExitCodeProcess(procInfo.hProcess, &exitCode) || exitCode != STILL_ACTIVE) {
+        LOG_ERROR("Failed to start service: %s (%d)", fullConfigServicePath.c_str(), procInfo.dwProcessId);
+        CloseHandle(procInfo.hThread);
+        CloseHandle(procInfo.hProcess);
+        return ATF_FAILED_PROC_CREATE;
+    } else if (exitCode == STILL_ACTIVE) {
+        LOG_INFO("Created config service. PID: %d", procInfo.dwProcessId);
+    } 
+
+    CloseHandle(procInfo.hThread);
+    CloseHandle(procInfo.hProcess);
     return ATF_ERROR_OK;
 }
 

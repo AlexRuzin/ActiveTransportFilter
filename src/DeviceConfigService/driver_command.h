@@ -40,10 +40,14 @@ private:
 
     bool                                    wfpRunning;
 
+    // Cleanup
+    std::shared_ptr<FilterConfig>           filterConfig;
+
 public:
-    DriverCommand(const std::string deviceFilePathIn) :
+    DriverCommand(const std::string deviceFilePathIn, std::shared_ptr<FilterConfig> cfg) :
         deviceFilepath(deviceFilePathIn),
-        wfpRunning(false)
+        wfpRunning(false),
+        filterConfig(cfg)
     {
     
     }
@@ -80,13 +84,18 @@ public:
     // Default configuration load from the ini file (see ini_reader.h -- FilterConfig class)
     //  IOCTL_ATF_SEND_WFP_CONFIG
     //
-    ATF_ERROR CmdSendIniConfiguration(const FilterConfig &filterConfig) const;
+    ATF_ERROR CmdSendIniConfiguration(void) const;
 
     //
     // Command to append an IPv4 blacklist to the driver
     //  IOCTL_ATF_APPEND_IPV4_BLACKLIST
     //
-    ATF_ERROR CmdAppendIpv4Blacklist(const FilterConfig &filterConfig) const;
+    ATF_ERROR CmdAppendIpv4Blacklist(void) const;
+
+    //
+    // Get the logical device driver path
+    //
+    const std::string &GetLogicalDevicePath(void) const;
 
 private:
     //

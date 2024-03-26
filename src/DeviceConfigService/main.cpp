@@ -23,7 +23,7 @@
 //
 // Parse the ini and create the FilterConfig object
 //
-static ATF_ERROR parseIni(std::unique_ptr<FilterConfig> &filterConfig);
+static ATF_ERROR parseIni(std::shared_ptr<FilterConfig> &filterConfig);
 
 //
 // Returns an ini file, either it's in debug mode or it's in packed mode
@@ -41,37 +41,53 @@ int CALLBACK WinMain(
     LOG_INIT(CONTROL_SERVICE_NAME, LOG_SOURCE_WINDOWS_DEBUG);
     LOG_INFO("Starting configuration service %s", CONTROL_SERVICE_NAME);
 
+    Sleep(500);
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    Sleep(500);
-
-    DriverCommand driverCommand(ATF_DRIVER_NAME);
-    atfError = driverCommand.InitializeDriverComms();
-    if (atfError) {
-        LOG_ERROR("Failed to open connection to device: 0x%08x", atfError);
-        //return atfError;
-    }
-
-    std::unique_ptr<FilterConfig> filterConfig;
+    std::shared_ptr<FilterConfig> filterConfig;
     atfError = parseIni(filterConfig);
     if (atfError) {
         LOG_ERROR("Failed to parse INI object: 0x%08x", atfError);
         return atfError;
     }
 
-    //atfError = driverCommand.CmdSendIniConfiguration(*filterConfig);
+    LOG_DEBUG("Successfully parsed INI %s", filterConfig->GetIniFilepath().c_str());
+
+
+    Sleep(500);
+
+    std::shared_ptr<DriverCommand> driverCommand = std::make_shared<DriverCommand>(ATF_DRIVER_NAME, filterConfig);
+    atfError = driverCommand->InitializeDriverComms();
+    if (atfError) {
+        LOG_ERROR("Failed to open connection to device: 0x%08x", atfError);
+        //return atfError;
+    }
+
+    LOG_DEBUG("Successfully connected to %s", driverCommand->GetLogicalDevicePath().c_str());
+
+    Sleep(500);
+
+    atfError = driverCommand->CmdSendIniConfiguration();
     if (atfError) {
         LOG_ERROR("Failed to send ini command (0x%08x)", atfError);
         return atfError;
     }
 
-    atfError = driverCommand.CmdAppendIpv4Blacklist(*filterConfig);
+    LOG_DEBUG("Successfully sent ini config");
+
+    Sleep(500);
+
+    atfError = driverCommand->CmdAppendIpv4Blacklist();
     if (atfError) {
         LOG_ERROR("Failed to append ipv4 blacklist (0x%08x)", atfError);
         return atfError;
     }
 
-    atfError = driverCommand.CmdStartWfp();
+    LOG_DEBUG("Successfully appended %d IPs from online blacklist", filterConfig->GetNumOfIpv4BlacklistIps());
+
+    Sleep(500);
+
+    atfError = driverCommand->CmdStartWfp();
     if (atfError) {
         LOG_ERROR("Failed to start WFP 0x%08x", atfError);
         return atfError;
@@ -121,7 +137,7 @@ int CALLBACK WinMain(
 }
 
 
-static ATF_ERROR parseIni(std::unique_ptr<FilterConfig> &filterConfig)
+static ATF_ERROR parseIni(std::shared_ptr<FilterConfig> &filterConfig)
 {
     std::string targetIniFile;
     ATF_ERROR atfError = getIniFile(targetIniFile);
@@ -131,7 +147,7 @@ static ATF_ERROR parseIni(std::unique_ptr<FilterConfig> &filterConfig)
 
     LOG_INFO("Found ini config path: " + targetIniFile);
 
-    filterConfig = std::make_unique<FilterConfig>(targetIniFile);
+    filterConfig = std::make_shared<FilterConfig>(targetIniFile);
     atfError = filterConfig->ParseIniFile();
     if (atfError) {
         return atfError;

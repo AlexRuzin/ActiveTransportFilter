@@ -94,7 +94,7 @@ ATF_ERROR DriverCommand::CmdFlushConfig(void) const
     return ioctlComm->SendIoctlNoData(IOCTL_ATF_FLUSH_CONFIG);
 }
 
-ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfig) const
+ATF_ERROR DriverCommand::CmdSendIniConfiguration(void) const
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
@@ -107,11 +107,11 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfi
         return ATF_WFP_ALREADY_RUNNING;
     }
 
-    if (!filterConfig.IsIniDataInitialized()) {
+    if (!filterConfig->IsIniDataInitialized()) {
         return ATF_NO_INI_CONFIG;
     }
 
-    std::vector<std::byte> configSerialized = filterConfig.SerializeConfigBuffer();
+    std::vector<std::byte> configSerialized = filterConfig->SerializeConfigBuffer();
     if (configSerialized.size() == 0) {
         return ATF_NO_INI_CONFIG;
     }
@@ -119,7 +119,7 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(const FilterConfig &filterConfi
     return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_SEND_WFP_CONFIG, configSerialized);
 }
 
-ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(const FilterConfig &filterConfig) const
+ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(void) const
 {
     if (!isDeviceReady()) {
         return ATF_DEVICE_NOT_CONNECTED;
@@ -130,7 +130,7 @@ ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(const FilterConfig &filterConfig
         return ATF_WFP_ALREADY_RUNNING;
     }
 
-    const std::vector<struct in_addr> &list = filterConfig.GetIpv4BlacklistOnline();
+    const std::vector<struct in_addr> &list = filterConfig->GetIpv4BlacklistOnline();
 
     if (!list.size()) {
         return ATF_NO_DATA_AVAILABLE;
@@ -142,6 +142,17 @@ ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(const FilterConfig &filterConfig
     CopyMemory(rawBuf.data(), list.data(), list.size() * sizeof(struct in_addr));
 
     return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_APPEND_IPV4_BLACKLIST, rawBuf);
+}
+
+const std::string &DriverCommand::GetLogicalDevicePath(void) const
+{
+    static const std::string notConnected = "not_connected";
+
+    if (!ioctlComm) {
+        return notConnected;
+    }
+
+    return ioctlComm->GetLogicalDeviceFileName();
 }
 
 bool DriverCommand::isDeviceReady(void) const
