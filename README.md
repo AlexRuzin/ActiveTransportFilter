@@ -158,6 +158,10 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
 }
 ```
 
+## TODO List
+
+1) Fix static linkage with libcurl and vcpkg. Issue is that statically linking CRT and libcurl fails. Currently, I am manually pushing the debug and release bins for libcurl
+
 ## Interesting Fixes and Discoveries During Development
 
 ### Implement correct IRQL

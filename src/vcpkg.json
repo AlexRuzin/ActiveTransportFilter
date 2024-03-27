@@ -2,16 +2,8 @@
   "name": "active-transport-filter",
   "version": "0.1.1",
 	
-  "dependencies": [
-    "fmt",    
+  "dependencies": [ 
 	"inih",
-    {
-      "name": "curl",
-      "features" : [
-        "openssl",
-        "libcurl"
-      ],
-      "platform": "(windows & x64 & static)"
-    }
+	"curl"
   ]
 }

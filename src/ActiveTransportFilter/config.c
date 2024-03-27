@@ -71,6 +71,14 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     out->numOfIpv4Addresses                     = data->numOfIpv4Addresses;
     out->numOfIpv6Addresses                     = data->numOfIpv6Addresses;
 
+    //
+    // Allocate a new trie pool even if we don't have any blacklisted IPs
+    //
+    atfError = AtfIpv4TrieAllocCtx(&out->ipv4TrieCtx);
+    if (atfError) {
+        return atfError;
+    }
+
     if (out->numOfIpv4Addresses) {
         const size_t sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(struct in_addr);
         out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv4Pool);
@@ -80,12 +88,6 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
         }
 
         RtlCopyMemory(out->ipv4AddressPool, data->ipv4BlackList, sizeOfIpv4Pool);
-
-        DbgBreakPoint();
-        atfError = AtfIpv4TrieAllocCtx(&out->ipv4TrieCtx);
-        if (atfError) {
-            return atfError;
-        }
 
         atfError = AtfIpv4TrieInsertPool(
             out->ipv4TrieCtx, 

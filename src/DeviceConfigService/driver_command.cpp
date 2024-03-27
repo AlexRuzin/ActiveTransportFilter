@@ -111,7 +111,7 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(void) const
         return ATF_NO_INI_CONFIG;
     }
 
-    std::vector<std::byte> configSerialized = filterConfig->SerializeConfigBuffer();
+    const std::vector<std::byte> configSerialized = filterConfig->SerializeConfigBuffer();
     if (configSerialized.size() == 0) {
         return ATF_NO_INI_CONFIG;
     }
@@ -140,6 +140,22 @@ ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(void) const
     const size_t totalSize = list.size() * sizeof(struct in_addr);
     std::vector<std::byte> rawBuf(totalSize);
     CopyMemory(rawBuf.data(), list.data(), list.size() * sizeof(struct in_addr));
+
+
+    // Split the blacklist buffer into chunks and send it, as it cannot exceed IOCTL size BLACKLIST_IPV4_MAX_SIZE
+    while (rawBuf.size()) {
+        const std::vector<std::byte> chunk(rawBuf.begin(), 
+            rawBuf.begin() + (rawBuf.size() > BLACKLIST_IPV4_MAX_SIZE ? BLACKLIST_IPV4_MAX_SIZE : rawBuf.size()));
+
+        ATF_ERROR atfError = ioctlComm->SendRawBufferIoctl(IOCTL_ATF_APPEND_IPV4_BLACKLIST, chunk);
+        if (atfError) {
+            return atfError;
+        }
+
+        rawBuf.erase(rawBuf.begin(), rawBuf.begin() + chunk.size());
+    }
+
+
 
     return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_APPEND_IPV4_BLACKLIST, rawBuf);
 }

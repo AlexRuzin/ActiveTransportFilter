@@ -55,7 +55,7 @@ ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, 
             // Add the new trie, if necessary
             if (currTrieNode[currOctet] == 0) {
                 currTrieNode[currOctet] = (IPV4_OCTET *)ATF_MALLOC(IPV4_TRIE_NODE_SIZE);
-                if (!currTrieNode[currOctet]) {
+                if (currTrieNode[currOctet] == NULL) {
                     return ATF_NO_MEMORY_AVAILABLE;
                 }
 

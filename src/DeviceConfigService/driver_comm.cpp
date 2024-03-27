@@ -68,7 +68,7 @@ ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, const void *ptr, size_
     return ATF_ERROR_OK;
 }
 
-ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, std::vector<std::byte> &rawBuffer) const
+ATF_ERROR IoctlComm::SendRawBufferIoctl(IOCTL_CODE ioctl, const std::vector<std::byte> &rawBuffer) const
 {
     if (driverHandle == INVALID_HANDLE_VALUE) {
         return ATF_FAILED_HANDLE_NOT_OPENED;

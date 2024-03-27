@@ -108,7 +108,10 @@ ATF_ERROR doWriteExecutables(void)
     LOG_INFO("Temporary path: " + tempPath);
 
     // Cleanup the temp directory (install directory)
+#if 0
+    // Removing this because I am manually pushing library DLLs to the machine. In release builds, this will be enabled
     cleanInstallDirectory(tempPath);   
+#endif
 
     // Contains resources and their paths
     static const std::map<int, std::string> resPaths = {
