@@ -110,9 +110,53 @@ The components are packed into `DriverController`'s resource segment, and automa
 
 This is still under design. I will most likely use a type of radix "trie" to create a tree which will have 255 children for each octet in the IP. I will experiment with various methods until I find one that is most suitable.
 
-* Experimentation with a "patricia trie", an O(m) search (for each ipv4 octet), but in 64-bit space. 
+* Experimentation with a "patricia trie", an O(m) search (for each ipv4 octet) 
 * Each array contains a pointer to another array and so on for 4 octets. 
 * The size of a trie is twice as large on x64 than x86 due to the pointer size.
+* Drawback is that in a 64-bit environment, pointers are large and so the larger the pointers the larger the trie. The tree would be more memory-friendly in on a system with 32-bit pointers.
+
+This implementation of the "patricia trie" is my own variant. I don't use a struct, with an array of pointers to the next struct. Rather, each node (octet) is represented by an array of 255 pointers, which are indexed using the octet. The pointer at the octet/index, then points to the next node, which consists of an array of 255 pointers and so on. 
+
+So each octet is a node which is an array of 255 void pointers (I know it's a mouthful, but the idea here is to reduce total memory size by using pointers rather than structs -- so the entire trie is just a bunch of pointers pointing to more pointers! Pointers, pointers everywhere...)
+
+See `ipv4_trie.c`. Here is the insert algorithm:
+
+```
+ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, size_t numOfIps)
+{
+    // Iterate through the input pool, inserting each IP into the trie
+    for (size_t currIp = 0; currIp < numOfIps; currIp++) {
+        struct in_addr ip;
+        ip.S_un.S_addr = pool[currIp].S_un.S_addr;
+
+        VOID **currTrieNode = ctx->root; // Represents the current trie node, starting from the first octet in the IP
+
+        // Iterate through each octet of the current IP, and insert trie at the corresponding index (octet)        
+        for (UINT8 octetCount = 0; octetCount < sizeof(struct in_addr); octetCount++) {
+            const UINT8 currOctet = (ip.S_un.S_addr >> (octetCount * 8)) & 0xff; // Use the counter to grab the octet we need
+
+            // If we've reached the last octet, add a -1 (ipEndMarker)
+            if (octetCount == 3) {
+                currTrieNode[currOctet] = -1; // Indicates that this is the last node in the trie (the last octet)
+                break;
+            }
+
+            // If the pointer at that index is NULL, we need to allocate another trie which is `sizeof(VOID *) * MAX_UINT8` (255)
+            if (currTrieNode[currOctet] == 0) {
+                currTrieNode[currOctet] = (UINT8 *)ATF_MALLOC(IPV4_TRIE_NODE_SIZE);
+                // Handle no memory condition
+            }
+
+            // Iterate into the next trie
+            currTrieNode = currTrieNode[currOctet];
+        }
+    }
+
+    ctx->totalNumOfIps += numOfIps;
+
+    return ATF_ERROR_OK;
+}
+```
 
 ## Interesting Fixes and Discoveries During Development
 
@@ -132,6 +176,12 @@ Issue is probably that WFP doesn't like locking in the callout functions, which 
 As a result, I cannot "dynamically" change the config for the filter engine, I need to stop WFP entirely, refresh the config, and restart WFP.
 
 **Update** removing the `KMUTEX` in the callout was the fix.
+
+### Issue with `vcpkg` and libcurl
+
+This is mostly a note for myself, but the issue is that I require libcurl.lib to be statically linked to the service, rather than dynamic linkage. Using the `vcpkg` manifest, I managed to get the dynamic linking working, along with the vcpkg that compiles libcurl (and inih, but this is a header-only file so no lib required), but it does not work with static linking.
+
+I'm looking into fixes. Potential fix is to remake the solution using CMake, and instruct the compiler to force static linkage, but this is not ideal.
 
 ### Example of Callout Handlers Working
 
