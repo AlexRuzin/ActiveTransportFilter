@@ -155,9 +155,7 @@ ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(void) const
         rawBuf.erase(rawBuf.begin(), rawBuf.begin() + chunk.size());
     }
 
-
-
-    return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_APPEND_IPV4_BLACKLIST, rawBuf);
+    return ATF_ERROR_OK;
 }
 
 const std::string &DriverCommand::GetLogicalDevicePath(void) const

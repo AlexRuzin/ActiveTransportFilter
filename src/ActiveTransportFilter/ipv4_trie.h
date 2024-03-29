@@ -9,7 +9,7 @@
 
 #include "mem.h"
 
-#define IPV4_TRIE_NODE_SIZE (_UI8_MAX * sizeof(VOID *))
+#define IPV4_TRIE_NODE_SIZE ((_UI8_MAX + 1) * sizeof(VOID *))
 
 //
 // Sorted "patricia trie" for IPv4 addresses

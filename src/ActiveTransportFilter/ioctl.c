@@ -348,8 +348,6 @@ static NTSTATUS AtfHandlerAppendIpv4Blacklist(
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
-    DbgBreakPoint();
-
     if (IsWfpRunning()) {
         // WFP cannot be running when sending the blacklist
         ATF_ERROR(IsWfpRunning, STATUS_DEVICE_BUSY);

@@ -107,11 +107,21 @@ BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid)
 //
 ATF_ERROR AtfFilterCallbackTcpIpv4(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data)
 {
+    UNREFERENCED_PARAMETER(dir);
+
     if (data == NULL) {
         return ATF_BAD_PARAMETERS;
     }    
 
-    AtfFilterPrintIP(dir, data);
+    //AtfFilterPrintIP(dir, data);
+
+    if (AtfIpv4TrieSearch(gConfigCtx->ipv4TrieCtx, data->dest)) {
+        return ATF_FILTER_SIGNAL_ALERT;
+    }
+
+    if (AtfIpv4TrieSearch(gConfigCtx->ipv4TrieCtx, data->source)) {
+        return ATF_FILTER_SIGNAL_ALERT;
+    }
 
     return ATF_ERROR_OK;
 }

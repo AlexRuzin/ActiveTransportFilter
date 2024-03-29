@@ -543,7 +543,7 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     break;
     case ATF_FILTER_SIGNAL_ALERT:
     {
-    
+        ATF_DEBUGA("SIGNAL ALERT: Dest: 0x%08x, Src: 0x%08x", data.dest, data.source);
     } 
     break;
     case ATF_ERROR_OK:
