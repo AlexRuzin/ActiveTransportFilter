@@ -138,15 +138,11 @@ static ATF_ERROR AtfFilterParsePacket(
     // Parse IP strings
     IN_ADDR localIp;
     localIp.S_un.S_addr = reverse_byte_order_uint32_t(dataOut->localIp.S_un.S_addr);
-    if (!RtlIpv4AddressToStringA(&localIp, dataOut->localIpStr)) {
-        return ATF_BAD_DATA;
-    }
+    RtlIpv4AddressToStringA(&localIp, dataOut->localIpStr);
 
     IN_ADDR remoteIp;
     remoteIp.S_un.S_addr = reverse_byte_order_uint32_t(dataOut->remoteIp.S_un.S_addr);
-    if (!RtlIpv4AddressToStringA(&remoteIp, dataOut->remoteIpStr)) {
-        return ATF_BAD_DATA;
-    }
+    RtlIpv4AddressToStringA(&remoteIp, dataOut->remoteIpStr);
 
     return ATF_ERROR_OK;
 }
@@ -160,6 +156,8 @@ ATF_ERROR AtfFilterCallbackTcpIpv4(
     _In_ enum _flow_direction dir
 )
 {
+    DbgBreakPoint();
+
     UNREFERENCED_PARAMETER(dir);
 
     VALIDATE_PARAMETER(fixedValues);
@@ -205,6 +203,13 @@ ATF_ERROR AtfFilterCallbackTcpIpv4(
     } else if (gConfigCtx->ipv4BlocklistAction == ACTION_ALERT && (srcInTrie | destInTrie)) {
         atfError = ATF_FILTER_SIGNAL_ALERT;
     }
+
+    static const CHAR *actionNames[] = 
+    {
+        "PASS",
+        "BLOCK",
+        "ALERT"
+    };
 
     // Report/log
     if (atfError != ATF_FILTER_SIGNAL_PASS) {

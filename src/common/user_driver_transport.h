@@ -60,13 +60,6 @@ typedef enum {
     ACTION_ALERT        // Alert on blocklist
 } ACTION_OPTS;
 
-static const CHAR *actionNames[] = 
-{
-    "PASS",
-    "BLOCK",
-    "ALERT"
-};
-
 //
 // Primary struct sent via IOCTL to configure filter.c
 //
