@@ -55,10 +55,17 @@ typedef _servicePort                                        SERVICE_PORT;
 // Action types against the blocklist (see ini)
 //
 typedef enum {
-    ACTION_NONE,        // Do nothing with the blocklist. Default value
+    ACTION_PASS,        // Do nothing with the blocklist. Default value
     ACTION_BLOCK,       // Block/drop the packet on blocklist
     ACTION_ALERT        // Alert on blocklist
 } ACTION_OPTS;
+
+static const CHAR *actionNames[] = 
+{
+    "PASS",
+    "BLOCK",
+    "ALERT"
+};
 
 //
 // Primary struct sent via IOCTL to configure filter.c
@@ -70,11 +77,17 @@ typedef struct _user_driver_filter_transport_data {
     UINT16                                                  size;
 
     // Layer config
-    UINT8                                                   enableLayerIpv4TcpInbound;
-    UINT8                                                   enableLayerIpv4TcpOutbound;
-    UINT8                                                   enableLayerIpv6TcpInbound;
-    UINT8                                                   enableLayerIpv6TcpOutbound;
-    UINT8                                                   enableLayerIcmpv4;
+    BOOLEAN                                                 enableLayerIpv4TcpInbound;
+    BOOLEAN                                                 enableLayerIpv4TcpOutbound;
+    BOOLEAN                                                 enableLayerIpv6TcpInbound;
+    BOOLEAN                                                 enableLayerIpv6TcpOutbound;
+    BOOLEAN                                                 enableLayerIcmpv4;
+
+    //
+    // Alert on direction
+    //
+    BOOLEAN                                                 alertInbound;
+    BOOLEAN                                                 alertOutbound;
 
     //
     // Action configs

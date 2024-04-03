@@ -2,7 +2,21 @@
 #pragma once
 #endif //_MSC_VER > 1000
 
+#if !defined(NT)
+#define NT
+#endif //NT
+
+#if !defined(NDIS60)
+#define NDIS60 1
+#endif //NDIS60
+
+#if !defined(NDIS_SUPPORT_NDIS6)
+#define NDIS_SUPPORT_NDIS6 1
+#endif //NDIS_SUPPORT_NDIS6
+
 #include <ntddk.h>
+#include <fwpsk.h>
+#include <fwpmk.h>
 
 // For handling WFP layer guids
 #include <initguid.h>
@@ -22,12 +36,19 @@ enum _flow_direction {
 
 #pragma pack(push, 1)
 typedef struct _atf_filter_conn_data {
-    struct in_addr              source;
-    struct in_addr              dest;
+    struct in_addr              localIp;
+    struct in_addr              remoteIp;
 
-    SERVICE_PORT                sourcePort;
-    SERVICE_PORT                destPort;
-} ATF_FLT_DATA_IPV4, *PATF_FLT_DATA_IPV4;
+    SERVICE_PORT                localPort;
+    SERVICE_PORT                remotePort;
+
+    CHAR                        fqDnsName[0xff]; //RFC1035
+    CHAR                        domainName[0xff];
+
+    // IP strings
+    CHAR                        localIpStr[16];
+    CHAR                        remoteIpStr[16];
+} ATF_FLT_DATA, *PATF_FLT_DATA;
 #pragma pack(pop)
 
 //
@@ -54,7 +75,11 @@ VOID AtfFilterStoreDefaultConfig(const CONFIG_CTX *confgCtx);
 //
 // Filter callback for IPv4 (TCP) 
 //
-ATF_ERROR AtfFilterCallbackTcpIpv4(enum _flow_direction dir, const ATF_FLT_DATA_IPV4 *data);
+ATF_ERROR AtfFilterCallbackTcpIpv4(
+    _In_ const FWPS_INCOMING_VALUES0 *fixedValues,
+    _Inout_ FWPS_CLASSIFY_OUT0 *classifyOut,
+    _In_ enum _flow_direction dir
+);
 
 //
 // Returns a TRUE is a WFP filter layer guid is to be enabled 

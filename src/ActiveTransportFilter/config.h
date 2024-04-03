@@ -60,6 +60,12 @@ typedef struct _config_ctx {
     ACTION_OPTS                     ipv4BlocklistAction;
     ACTION_OPTS                     ipv6BlocklistAction;
     ACTION_OPTS                     dnsBlocklistAction; 
+
+    //
+    // Direction switches
+    //
+    BOOLEAN                         alertInbound;
+    BOOLEAN                         alertOutbound;
 } CONFIG_CTX, *PCONFIG_CTX;
 
 //

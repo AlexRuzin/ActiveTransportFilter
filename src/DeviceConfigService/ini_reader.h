@@ -95,6 +95,12 @@ private:
     bool                                        enableLayerIpv6TcpOutbound;
     bool                                        enableLayerIcmpv4;
 
+    //
+    // Direction switches
+    //
+    bool                                        alertInbound;
+    bool                                        alertOutbound;
+
     // Blacklist from the default ini config ONLY
     std::vector<struct in_addr>                 blocklistIpv4;
     std::vector<IPV6_RAW_ADDRESS>               blocklistIpv6;

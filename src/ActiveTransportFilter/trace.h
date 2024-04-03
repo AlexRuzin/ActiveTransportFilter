@@ -6,6 +6,8 @@
 #include <ntstrsafe.h>
 #include <stdarg.h>
 
+#include "../common/errors.h"
+
 #define MAX_VSPRINTF_BUF_SIZE 512
 
 
@@ -22,3 +24,5 @@
 
 #define ATF_ASSERT(x) if (!x) { return STATUS_INVALID_PARAMETER; }
 #define ATF_ASSERT_NORETURN(x) if (!x) { return; }
+
+#define VALIDATE_PARAMETER(x) if (!x) { return ATF_BAD_PARAMETERS; }

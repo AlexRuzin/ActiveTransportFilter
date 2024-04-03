@@ -19,6 +19,7 @@ typedef unsigned int ATF_ERROR;
 #define ATF_DEFAULT_CONFIG_TOO_LARGE            0x0000000c
 #define ATF_NO_DATA_AVAILABLE                   0x0000000d
 #define ATF_DEVICE_NOT_CONNECTED                0x0000000e
+#define ATF_BAD_DATA                            0x0000000f
 
 //
 // ATF INI parser errors                        

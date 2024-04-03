@@ -30,8 +30,8 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 );
 
 //
@@ -43,8 +43,8 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 );
 
 //
@@ -56,8 +56,8 @@ void NTAPI AtfClassifyFuncTcpV6(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 );
 
 // 
@@ -69,8 +69,8 @@ void NTAPI AtfClassifyFuncIcmp(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 );
 
 //
@@ -505,58 +505,22 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 )
 {
-    ATF_ERROR atfError = ATF_ERROR_OK;
-
     UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(metaValues);
     UNREFERENCED_PARAMETER(layerData);
     UNREFERENCED_PARAMETER(classifyContext);
     UNREFERENCED_PARAMETER(filter);
-    //UNREFERENCED_PARAMETER(fixedValues);
-    UNREFERENCED_PARAMETER(flow_context);
-    UNREFERENCED_PARAMETER(classify_out);
+    UNREFERENCED_PARAMETER(flowContext);
 
-    ATF_FLT_DATA_IPV4 data = { 0 };
-
-    data.source.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_ADDRESS].value.uint32;
-    data.dest.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
-
-    data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_LOCAL_PORT].value.uint16;
-    data.destPort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_OUTBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
-
-    atfError = AtfFilterCallbackTcpIpv4(_flow_direction_inbound, &data);
-    switch(atfError)
-    {
-    case ATF_FILTER_SIGNAL_PASS:
-    {
-    
-    } 
-    break;
-    case ATF_FILTER_SIGNAL_BLOCK:
-    {
-    
-    } 
-    break;
-    case ATF_FILTER_SIGNAL_ALERT:
-    {
-        ATF_DEBUGA("SIGNAL ALERT: Dest: 0x%08x, Src: 0x%08x", data.dest, data.source);
-    } 
-    break;
-    case ATF_ERROR_OK:
-    {
-    
-    } 
-    break;
-    default:
-        ATF_ERROR(AtfFilterCallbackTcpIpv4Inbound, atfError);
-        break;
-    }
-
-    return;
+    AtfFilterCallbackTcpIpv4(
+        fixedValues,
+        classifyOut,
+        _flow_direction_inbound
+    );
 }
 
 void NTAPI AtfClassifyFuncTcpV4Outbound(
@@ -565,58 +529,22 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 )
 {
-    ATF_ERROR atfError = ATF_ERROR_OK;
-
     UNREFERENCED_PARAMETER(fixedValues);
     UNREFERENCED_PARAMETER(metaValues);
     UNREFERENCED_PARAMETER(layerData);
     UNREFERENCED_PARAMETER(classifyContext);
     UNREFERENCED_PARAMETER(filter);
-    //UNREFERENCED_PARAMETER(fixedValues);
-    UNREFERENCED_PARAMETER(flow_context);
-    UNREFERENCED_PARAMETER(classify_out);
+    UNREFERENCED_PARAMETER(flowContext);
 
-    ATF_FLT_DATA_IPV4 data = { 0 };
-
-    data.source.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_LOCAL_ADDRESS].value.uint32;
-    data.dest.S_un.S_addr = fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_REMOTE_ADDRESS].value.uint32;
-
-    data.sourcePort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_LOCAL_PORT].value.uint16;
-    data.destPort = (SERVICE_PORT)fixedValues->incomingValue[FWPS_FIELD_INBOUND_TRANSPORT_V4_IP_REMOTE_PORT].value.uint16;
-
-    atfError = AtfFilterCallbackTcpIpv4(_flow_direction_outbound, &data);
-    switch(atfError)
-    {
-    case ATF_FILTER_SIGNAL_PASS:
-    {
-
-    } 
-    break;
-    case ATF_FILTER_SIGNAL_BLOCK:
-    {
-
-    } 
-    break;
-    case ATF_FILTER_SIGNAL_ALERT:
-    {
-
-    } 
-    break;
-    case ATF_ERROR_OK:
-    {
-
-    } 
-    break;
-    default:
-        ATF_ERROR(AtfFilterCallbackTcpIpv4Inbound, atfError);
-        break;
-    }
-
-    return;
+    AtfFilterCallbackTcpIpv4(
+        fixedValues,
+        classifyOut,
+        _flow_direction_outbound
+    );  
 }
 
 void NTAPI AtfClassifyFuncTcpV6(
@@ -625,8 +553,8 @@ void NTAPI AtfClassifyFuncTcpV6(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 )
 {
     ATF_DEBUG(AtfClassifyFuncTcpV6, "Entered WFP callout: TCP ipv6");
@@ -637,8 +565,8 @@ void NTAPI AtfClassifyFuncTcpV6(
     UNREFERENCED_PARAMETER(classifyContext);
     UNREFERENCED_PARAMETER(filter);
     UNREFERENCED_PARAMETER(fixedValues);
-    UNREFERENCED_PARAMETER(flow_context);
-    UNREFERENCED_PARAMETER(classify_out);
+    UNREFERENCED_PARAMETER(flowContext);
+    UNREFERENCED_PARAMETER(classifyOut);
 
     return;
 }
@@ -649,8 +577,8 @@ void NTAPI AtfClassifyFuncIcmp(
     _Inout_opt_ void *layerData,
     _In_opt_    const void *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
-    _In_        UINT64 flow_context,
-    _Inout_     FWPS_CLASSIFY_OUT0 *classify_out
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
 )
 {
     ATF_DEBUG(AtfClassifyFuncIcmp, "Entered WFP callout: ICMP");
@@ -661,8 +589,8 @@ void NTAPI AtfClassifyFuncIcmp(
     UNREFERENCED_PARAMETER(classifyContext);
     UNREFERENCED_PARAMETER(filter);
     UNREFERENCED_PARAMETER(fixedValues);
-    UNREFERENCED_PARAMETER(flow_context);
-    UNREFERENCED_PARAMETER(classify_out);
+    UNREFERENCED_PARAMETER(flowContext);
+    UNREFERENCED_PARAMETER(classifyOut);
 
     return;
 }

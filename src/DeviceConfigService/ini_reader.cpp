@@ -171,6 +171,10 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
     parseActionType("ipv6_blocklist_action", ipv6BlocklistAction);
     parseActionType("dns_blocklist_action", dnsBlocklistAction);
 
+    // Parse direction switches
+    alertInbound = iniReader.GetBoolean("alert_config", "alert_inbound", false);
+    alertOutbound = iniReader.GetBoolean("alert_config", "alert_outbound", false);
+
     // Parse hardcoded blacklist strings
     const std::string ipv4Blacklist = iniReader.Get("blacklist_ipv4", "ipv4_list", unknownVal);
     const std::string ipv6Blacklist = iniReader.Get("blacklist_ipv6", "ipv6_list", unknownVal);
@@ -214,13 +218,13 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
 
 void FilterConfig::parseActionType(std::string typeStr, ACTION_OPTS &opt)
 {
-    static const std::string noneAction = "NONE";
+    static const std::string noneAction = "PASS";
     static const std::string alertAction = "ALERT";
     static const std::string blockAction = "BLOCK";
 
     static const std::map<std::string, ACTION_OPTS> actionVals = {
         {
-            noneAction, ACTION_NONE
+            noneAction, ACTION_PASS
         },
 
         {  
@@ -234,7 +238,7 @@ void FilterConfig::parseActionType(std::string typeStr, ACTION_OPTS &opt)
 
     const std::string actionString = iniReader.GetString("alert_config", typeStr, noneAction);
     if (actionVals.find(actionString) == actionVals.end()) {
-        opt = ACTION_NONE;
+        opt = ACTION_PASS;
         return;
     }
 
