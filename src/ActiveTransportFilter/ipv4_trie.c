@@ -31,6 +31,8 @@ ATF_ERROR AtfIpv4TrieAllocCtx(IPV4_TRIE_CTX **ctxOut)
 //
 ATF_ERROR AtfIpv4TrieInsertPool(IPV4_TRIE_CTX *ctx, const struct in_addr *pool, size_t numOfIps)
 {
+    DbgBreakPoint();
+
     if (!ctx || !pool || !numOfIps) {
         return ATF_BAD_PARAMETERS;
     }    

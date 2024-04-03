@@ -113,6 +113,10 @@ ATF_ERROR AtfFilterCallbackTcpIpv4(enum _flow_direction dir, const ATF_FLT_DATA_
         return ATF_BAD_PARAMETERS;
     }    
 
+    if (data->dest.S_un.S_addr == 0x0a000001 || data->dest.S_un.S_addr == 0x0100000a) {
+        DbgBreakPoint();
+    }  
+
     //AtfFilterPrintIP(dir, data);
 
     if (AtfIpv4TrieSearch(gConfigCtx->ipv4TrieCtx, data->dest)) {

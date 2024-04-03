@@ -169,7 +169,7 @@ ATF_ERROR doConfigServiceStartup(void)
         return ATF_FAILED_PROC_CREATE;
     }
 
-    Sleep(5000);
+    Sleep(1000);
 
     DWORD exitCode = 0;
     if (!GetExitCodeProcess(procInfo.hProcess, &exitCode) || exitCode != STILL_ACTIVE) {

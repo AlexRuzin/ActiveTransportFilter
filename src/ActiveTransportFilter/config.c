@@ -71,6 +71,11 @@ ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, C
     out->numOfIpv4Addresses                     = data->numOfIpv4Addresses;
     out->numOfIpv6Addresses                     = data->numOfIpv6Addresses;
 
+    // Set actions
+    out->ipv4BlocklistAction                    = data->ipv4BlocklistAction;
+    out->ipv6BlocklistAction                    = data->ipv6BlocklistAction;
+    out->dnsBlocklistAction                     = data->dnsBlocklistAction;
+
     //
     // Allocate a new trie pool even if we don't have any blacklisted IPs
     //

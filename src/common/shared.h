@@ -29,6 +29,15 @@ inline bool IsFileExists(std::string filepath)
 }
 
 //
+// endianness swap
+//
+inline void swapUint32(uint32_t &val)
+{
+    val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF); 
+    val = (val << 16) | (val >> 16);
+}
+
+//
 // Used to parse an IP blacklist, where each IP is delimited by a \n
 //
 inline std::vector<std::string> SplitStringByLine(const std::string &in)
@@ -138,6 +147,12 @@ inline uint32_t GetNumberOfCharsInStr(const std::string &s, const char &c)
 // 
 //  If it's not a valid address, return false
 //
+// NOTE: this IP address is stored in big-endian (s.t. struct in_addr is preserved)
+//  WFP callbacks use big-endian and the trie should use big-endian, therefore this function returns
+//  a big-endian value to conform to RFC 1700 for IPs
+//
+#define PARSE_IPV4_TO_BIG_ENDIAN
+
 inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)
 {
     static const uint8_t maxOctets = 4;
@@ -177,6 +192,11 @@ inline bool ParseStringToIpv4(const std::string &ip, uint32_t &ipOut)
 
         ipOut |= out << (uint8_t)((uint8_t)(i - tokenized.begin()) * 8);
     }
+
+    // Big-endian conversion (ipOut is little-endian)
+    #if defined(PARSE_IPV4_TO_BIG_ENDIAN)
+    swapUint32(ipOut);
+    #endif
 
     return true;
 }

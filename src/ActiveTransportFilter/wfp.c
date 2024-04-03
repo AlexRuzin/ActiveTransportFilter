@@ -297,7 +297,7 @@ NTSTATUS InitializeWfp(
     atfDevice = deviceObj;
     for (UINT8 currLayer = 0; currLayer < ARRAYSIZE(descList); currLayer++) {
         if (!AtfFilterIsLayerEnabled(descList[currLayer].guid)) {
-            ATF_DEBUGA("WFP Filter Layer Disabled: %s", descList[currLayer].calloutName);
+            ATF_DEBUGA("WFP Filter Layer Disabled: %ws", descList[currLayer].calloutName);
             continue;
         }
 
@@ -306,7 +306,7 @@ NTSTATUS InitializeWfp(
             ATF_ERROR(AtfAddCalloutLayer, ntStatus);
             return ntStatus;
         }
-        ATF_DEBUGA("WFP Filter Layer Enabled: %s", descList[currLayer].calloutName);
+        ATF_DEBUGA("WFP Filter Layer Enabled: %ws", descList[currLayer].calloutName);
     }
 
     ATF_DEBUG(InitializeWfp, "WFP Startup Successful!");

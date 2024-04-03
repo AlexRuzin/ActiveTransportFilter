@@ -77,6 +77,7 @@ int CALLBACK WinMain(
 
     Sleep(500);
 
+    #if 0
     atfError = driverCommand->CmdAppendIpv4Blacklist();
     if (atfError) {
         LOG_ERROR("Failed to append ipv4 blacklist (0x%08x)", atfError);
@@ -84,6 +85,7 @@ int CALLBACK WinMain(
     }
 
     LOG_DEBUG("Successfully appended %d IPs from online blacklist", filterConfig->GetNumOfIpv4BlacklistIps());
+    #endif
 
     Sleep(500);
 
@@ -94,7 +96,6 @@ int CALLBACK WinMain(
     }
 
     #if 0
-    Sleep(10000);
     atfError = driverCommand.CmdStopWfp();
     if (atfError) {
         LOG_ERROR("Failed to start WFP 0x%08x", atfError);

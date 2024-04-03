@@ -51,6 +51,18 @@ typedef _servicePort                                        SERVICE_PORT;
 //
 #define FILTER_TRANSPORT_MAGIC                              0x3af3bbcc
 
+//
+// Action types against the blocklist (see ini)
+//
+typedef enum {
+    ACTION_NONE,        // Do nothing with the blocklist. Default value
+    ACTION_BLOCK,       // Block/drop the packet on blocklist
+    ACTION_ALERT        // Alert on blocklist
+} ACTION_OPTS;
+
+//
+// Primary struct sent via IOCTL to configure filter.c
+//
 #pragma pack(push, 1)
 typedef struct _user_driver_filter_transport_data {
     // Object sanity
@@ -63,6 +75,13 @@ typedef struct _user_driver_filter_transport_data {
     UINT8                                                   enableLayerIpv6TcpInbound;
     UINT8                                                   enableLayerIpv6TcpOutbound;
     UINT8                                                   enableLayerIcmpv4;
+
+    //
+    // Action configs
+    //
+    ACTION_OPTS                                             ipv4BlocklistAction;
+    ACTION_OPTS                                             ipv6BlocklistAction;
+    ACTION_OPTS                                             dnsBlocklistAction;
 
     // Blacklist for all IPv6 addresses
     //  Note: the default config (ini) will only contain the manually entered addresses, so it will

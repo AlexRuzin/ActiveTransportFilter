@@ -159,13 +159,19 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
     static const std::string unknownVal = "UNKNOWN";
     static const char standardDelimiter = ',';
 
-    // Parse all values
+    // Parse all layer switches
     enableLayerIpv4TcpInbound = iniReader.GetBoolean("wfp_layer", "enable_layer_inbound_tcp_v4", false);
     enableLayerIpv4TcpOutbound = iniReader.GetBoolean("wfp_layer", "enable_layer_inbound_tcp_v6", false);
     enableLayerIpv6TcpInbound = iniReader.GetBoolean("wfp_layer", "enable_layer_outbound_tcp_v4", false);
     enableLayerIpv6TcpOutbound = iniReader.GetBoolean("wfp_layer", "enable_layer_outbound_tcp_v6", false);
     enableLayerIcmpv4 = iniReader.GetBoolean("wfp_layer", "enableLayerIcmpv4", false);
 
+    // Parse action switches
+    parseActionType("ipv4_blocklist_action", ipv4BlocklistAction);
+    parseActionType("ipv6_blocklist_action", ipv6BlocklistAction);
+    parseActionType("dns_blocklist_action", dnsBlocklistAction);
+
+    // Parse hardcoded blacklist strings
     const std::string ipv4Blacklist = iniReader.Get("blacklist_ipv4", "ipv4_list", unknownVal);
     const std::string ipv6Blacklist = iniReader.Get("blacklist_ipv6", "ipv6_list", unknownVal);
 
@@ -204,6 +210,35 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
     LOG_INFO("Ini CRC32 sum: 0x%08x", lastIniSum);
 
     return ATF_ERROR_OK;
+}
+
+void FilterConfig::parseActionType(std::string typeStr, ACTION_OPTS &opt)
+{
+    static const std::string noneAction = "NONE";
+    static const std::string alertAction = "ALERT";
+    static const std::string blockAction = "BLOCK";
+
+    static const std::map<std::string, ACTION_OPTS> actionVals = {
+        {
+            noneAction, ACTION_NONE
+        },
+
+        {  
+            alertAction, ACTION_ALERT
+        },
+
+        {
+            blockAction, ACTION_BLOCK
+        }
+    };
+
+    const std::string actionString = iniReader.GetString("alert_config", typeStr, noneAction);
+    if (actionVals.find(actionString) == actionVals.end()) {
+        opt = ACTION_NONE;
+        return;
+    }
+
+    opt = actionVals.at(actionString);
 }
 
 const USER_DRIVER_FILTER_TRANSPORT_DATA &FilterConfig::GetRawFilterData(void) const
@@ -293,6 +328,10 @@ void FilterConfig::genIoctlStruct(void)
     rawTransportData.enableLayerIpv6TcpInbound = enableLayerIpv6TcpInbound;
     rawTransportData.enableLayerIpv6TcpOutbound = enableLayerIpv6TcpOutbound;
     rawTransportData.enableLayerIcmpv4 = enableLayerIcmpv4;
+
+    rawTransportData.dnsBlocklistAction = dnsBlocklistAction;
+    rawTransportData.ipv4BlocklistAction = ipv4BlocklistAction;
+    rawTransportData.ipv6BlocklistAction = ipv6BlocklistAction;
 
     rawTransportData.numOfIpv4Addresses = (UINT16)blocklistIpv4.size();
     for (std::vector<struct in_addr>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {

@@ -103,6 +103,13 @@ private:
     std::vector<struct in_addr>                 blocklistIpv4Online;
 
     //
+    // Action configs
+    //
+    ACTION_OPTS                                 ipv4BlocklistAction;
+    ACTION_OPTS                                 ipv6BlocklistAction;
+    ACTION_OPTS                                 dnsBlocklistAction;
+
+    //
     // Transport buffer for IOCTL
     //
     USER_DRIVER_FILTER_TRANSPORT_DATA           rawTransportData;
@@ -193,4 +200,9 @@ private:
     // Parse the internal config into a the usermode to driver transport struct
     //
     void genIoctlStruct(void);
+
+    //
+    // Parser for the action type
+    //
+    void parseActionType(std::string typeStr, ACTION_OPTS &opt);
 };

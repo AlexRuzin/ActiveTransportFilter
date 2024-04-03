@@ -53,6 +53,13 @@ typedef struct _config_ctx {
     // IPv6 blacklist pool
     size_t                          numOfIpv6Addresses;
     IPV6_RAW_ADDRESS                *ipv6AddressPool;
+
+    //
+    // Action switches
+    //
+    ACTION_OPTS                     ipv4BlocklistAction;
+    ACTION_OPTS                     ipv6BlocklistAction;
+    ACTION_OPTS                     dnsBlocklistAction; 
 } CONFIG_CTX, *PCONFIG_CTX;
 
 //
