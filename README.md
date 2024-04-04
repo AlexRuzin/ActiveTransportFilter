@@ -176,8 +176,8 @@ I have added a comment to the top of `filter.c`, which gives an outline on how s
 //   packet processing. 
 // 
 // [Design]
-//   The idea behind ATF is to use WFP (Windows Filtering Platform)to intercept network packets on the local system, 
-//   and to match the packets against an IP and DNS blacklist (ruleset), which can also allow us to drop packets based 
+//   The idea behind ATF is to use WFP (Windows Filtering Platform) to intercept network packets on the local system, 
+//   and to match the packets against an IP and DNS blacklist (ruleset). The ruleset allows us to drop packets based 
 //   on conditions specified in the config ini. A primary requirement for this device driver is *speed at any cost*. 
 // 
 //   This means that ATF cannot hang WFP or the TCP/IP stack by slowly processing packets. It needs to be very optimized so that
