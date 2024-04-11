@@ -576,6 +576,7 @@ ATF_ERROR AtfFilterCallbackTcpIpv4(
     };
 
     // Report/log
+#if defined(ATF_MAIN_EVENT_OUTPUT)
     if (atfError != ATF_FILTER_SIGNAL_PASS) {
         ATF_DEBUGA("SIGNAL %s (%s): IP: %s (local:%s:%d -> remote:%s:%d)", 
             atfError == ATF_FILTER_SIGNAL_BLOCK ? actionNames[ACTION_BLOCK] : actionNames[ACTION_ALERT],
@@ -585,6 +586,7 @@ ATF_ERROR AtfFilterCallbackTcpIpv4(
             data.remoteIpStr, data.remotePort
         );
     }
+#endif //ATF_MAIN_EVENT_OUTPUT
 
     // Do ops
     switch(atfError)

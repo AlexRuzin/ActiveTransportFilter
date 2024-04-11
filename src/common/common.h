@@ -9,6 +9,11 @@
 //  Contains mostly strings and constants that are shared between service, driver, etc
 //
 
+//
+// Output the alert into windows debug
+//
+#define ATF_MAIN_EVENT_OUTPUT   
+
 
 //
 // ActiveTransportFilter Driver name and symbolic links
