@@ -337,6 +337,9 @@ void FilterConfig::genIoctlStruct(void)
     rawTransportData.ipv4BlocklistAction = ipv4BlocklistAction;
     rawTransportData.ipv6BlocklistAction = ipv6BlocklistAction;
 
+    rawTransportData.alertInbound = alertInbound;
+    rawTransportData.alertOutbound = alertOutbound;
+
     rawTransportData.numOfIpv4Addresses = (UINT16)blocklistIpv4.size();
     for (std::vector<struct in_addr>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
         rawTransportData.ipv4BlackList[i - blocklistIpv4.begin()] = *i;
