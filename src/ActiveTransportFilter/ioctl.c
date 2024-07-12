@@ -303,15 +303,15 @@ static NTSTATUS AtfHandleSendWfpConfig(
         return STATUS_NO_DATA_DETECTED;
     }
 
-    if (bufLen != sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
+    if (bufLen != sizeof(ATF_CONFIG_HDR)) {
         return STATUS_BUFFER_TOO_SMALL;
     }
 
-    USER_DRIVER_FILTER_TRANSPORT_DATA *data = NULL;
+    ATF_CONFIG_HDR *data = NULL;
 
     ntStatus = WdfRequestRetrieveInputBuffer(
         request,
-        sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA),
+        sizeof(struct _atf_config_hdr),
         (PVOID *)&data,
         NULL
     );

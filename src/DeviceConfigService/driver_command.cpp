@@ -111,12 +111,12 @@ ATF_ERROR DriverCommand::CmdSendIniConfiguration(void) const
         return ATF_NO_INI_CONFIG;
     }
 
-    const std::vector<std::byte> configSerialized = filterConfig->SerializeConfigBuffer();
-    if (configSerialized.size() == 0) {
+    const std::shared_ptr<std::vector<std::byte>> configSerialized = filterConfig->GetSerializeConfigBuffer();
+    if (!configSerialized || configSerialized->size() == 0) {
         return ATF_NO_INI_CONFIG;
     }
 
-    return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_SEND_WFP_CONFIG, configSerialized);
+    return ioctlComm->SendRawBufferIoctl(IOCTL_ATF_SEND_WFP_CONFIG, *configSerialized);
 }
 
 ATF_ERROR DriverCommand::CmdAppendIpv4Blacklist(void) const

@@ -42,8 +42,8 @@ typedef struct _ipv6RawAddress {
 typedef UINT16                                              _servicePort;
 typedef _servicePort                                        SERVICE_PORT;
 
-#define MAX_IPV4_ADDRESSES_BLACKLIST                        512
-#define MAX_IPV6_ADDRESSES_BLACKLIST                        512
+#define MAX_IPV4_ADDRESSES_BLACKLIST                        128
+#define MAX_IPV6_ADDRESSES_BLACKLIST                        128
 
 //
 // Structure to represent the transport buffer which configures ATF.
@@ -64,10 +64,10 @@ typedef enum {
 // Primary struct sent via IOCTL to configure filter.c
 //
 #pragma pack(push, 1)
-typedef struct _user_driver_filter_transport_data {
+typedef struct _atf_config_hdr {
     // Object sanity
     UINT32                                                  magic;
-    UINT16                                                  size;
+    UINT16                                                  structHeaderSize;
 
     // Layer config
     BOOLEAN                                                 enableLayerIpv4TcpInbound;
@@ -89,6 +89,11 @@ typedef struct _user_driver_filter_transport_data {
     ACTION_OPTS                                             ipv6BlocklistAction;
     ACTION_OPTS                                             dnsBlocklistAction;
 
+    //
+    // DNS config
+    //
+    BOOLEAN                                                 enableDnsBlackhole;
+
     // Blacklist for all IPv6 addresses
     //  Note: the default config (ini) will only contain the manually entered addresses, so it will
     //  never exceeed MAX_IPV4_ADDRESSES_BLACKLIST
@@ -99,5 +104,13 @@ typedef struct _user_driver_filter_transport_data {
     // Blacklist for all IPv4 addresses
     UINT16                                                  numOfIpv4Addresses;
     struct in_addr                                          ipv4BlackList[MAX_IPV6_ADDRESSES_BLACKLIST];
-} USER_DRIVER_FILTER_TRANSPORT_DATA, *PUSER_DRIVER_FILTER_TRANSPORT_DATA;
+
+    // Placeholder for DNS buffer
+    UINT16                                                  dnsPlaceholderBufSize;
+
+    //
+    // DNS header follows at offset + sizeof(struct _atf_config_hdr)
+    //
+} ATF_CONFIG_HDR, *PATF_CONFIG_HDR;
+
 #pragma pack(pop)

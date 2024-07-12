@@ -19,7 +19,7 @@
 //  which will then instruct WFP whether or not to initialize a layer
 // 
 // Further layer descriptors and callbacks are in wfp.c, so adding a layer
-//  requires modification of wfp.c (descList), ini file, USER_DRIVER_FILTER_TRANSPORT_DATA
+//  requires modification of wfp.c (descList), ini file, ATF_CONFIG_HDR
 //
 #pragma pack(push, 1)
 typedef struct _enabled_layer {
@@ -31,7 +31,7 @@ typedef struct _enabled_layer {
 //
 // Represents the entire filter configuration context
 //  A pointer to this object is returned by AtfAllocDefaultConfig, when the usermode supplies
-//  a USER_DRIVER_FILTER_TRANSPORT_DATA structure through IOCTL.
+//  a ATF_CONFIG_HDR structure through IOCTL.
 // 
 //
 typedef struct _config_ctx {
@@ -71,7 +71,7 @@ typedef struct _config_ctx {
 //
 // Initialize the default configuration
 //
-ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, CONFIG_CTX **cfgCtx);
+ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx);
 
 //
 // Append a new blocklist array to the config

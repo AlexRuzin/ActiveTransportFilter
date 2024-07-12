@@ -18,6 +18,7 @@
 #include <cstring>
 #include <cstdint>
 #include <sstream>
+#include <numeric>
 
 //
 // Global init for CURL
@@ -208,6 +209,14 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
         LOG_ERROR("Failed to parse online IP blacklist: 0x%08x", atfError);
     }
 
+    //
+    // Parse DNS blacklist
+    //
+    atfError = parseDnsSinkholeConfig();
+    if (atfError) {
+        LOG_ERROR("Failed to parse DNS blacklist: 0x%08x", atfError);
+    }
+
     genIoctlStruct();
 
     lastIniSum = shared::Crc32SumFile(iniFilePath);
@@ -245,9 +254,9 @@ void FilterConfig::parseActionType(std::string typeStr, ACTION_OPTS &opt)
     opt = actionVals.at(actionString);
 }
 
-const USER_DRIVER_FILTER_TRANSPORT_DATA &FilterConfig::GetRawFilterData(void) const
+const ATF_CONFIG_HDR &FilterConfig::GetRawFilterData(void) const
 {
-    return rawTransportData;
+    return rawTransportDataHdr;
 }
 
 const std::vector<struct in_addr> &FilterConfig::GetIpv4BlacklistOnline(void) const
@@ -320,43 +329,87 @@ ATF_ERROR FilterConfig::parseOnlineIpBlacklists(void)
     return ATF_NO_BLACKLISTS_AVAIL;
 }
 
+ATF_ERROR FilterConfig::parseDnsSinkholeConfig(void)
+{    
+    static const std::string invalidVal = "<invalid>";
+    static const std::string dnsHeader = "dns_null_route";
+
+    if (!iniReader.GetBoolean(dnsHeader, "null_route_enable", false)) {
+        return ATF_ERROR_OK;
+    }
+
+    const std::string dnsRaw = iniReader.GetString(dnsHeader, "null_route_manual", invalidVal);
+    if (dnsRaw == invalidVal) {
+        return ATF_BAD_INI_CONFIG;
+    }
+
+    static const char commaDelim = ',';
+    dnsItemList = shared::SplitStringByDelimiter(dnsRaw, commaDelim);
+    if (dnsItemList.size() == 0) {
+        return ATF_BAD_INI_CONFIG;
+    }
+
+    dnsProcessing = true;
+    return ATF_ERROR_OK;
+}
+
 void FilterConfig::genIoctlStruct(void)
 {
-    ZeroMemory(&rawTransportData, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+    ZeroMemory(&rawTransportDataHdr, sizeof(ATF_CONFIG_HDR));
 
-    rawTransportData.magic = FILTER_TRANSPORT_MAGIC;
-    rawTransportData.size = sizeof(struct _user_driver_filter_transport_data);
+    rawTransportDataHdr.magic = FILTER_TRANSPORT_MAGIC;
+    rawTransportDataHdr.structHeaderSize = sizeof(ATF_CONFIG_HDR);
 
-    rawTransportData.enableLayerIpv4TcpInbound = enableLayerIpv4TcpInbound;
-    rawTransportData.enableLayerIpv4TcpOutbound = enableLayerIpv4TcpOutbound;
-    rawTransportData.enableLayerIpv6TcpInbound = enableLayerIpv6TcpInbound;
-    rawTransportData.enableLayerIpv6TcpOutbound = enableLayerIpv6TcpOutbound;
-    rawTransportData.enableLayerIcmpv4 = enableLayerIcmpv4;
+    rawTransportDataHdr.enableLayerIpv4TcpInbound = enableLayerIpv4TcpInbound;
+    rawTransportDataHdr.enableLayerIpv4TcpOutbound = enableLayerIpv4TcpOutbound;
+    rawTransportDataHdr.enableLayerIpv6TcpInbound = enableLayerIpv6TcpInbound;
+    rawTransportDataHdr.enableLayerIpv6TcpOutbound = enableLayerIpv6TcpOutbound;
+    rawTransportDataHdr.enableLayerIcmpv4 = enableLayerIcmpv4;
 
-    rawTransportData.dnsBlocklistAction = dnsBlocklistAction;
-    rawTransportData.ipv4BlocklistAction = ipv4BlocklistAction;
-    rawTransportData.ipv6BlocklistAction = ipv6BlocklistAction;
+    rawTransportDataHdr.dnsBlocklistAction = dnsBlocklistAction;
+    rawTransportDataHdr.ipv4BlocklistAction = ipv4BlocklistAction;
+    rawTransportDataHdr.ipv6BlocklistAction = ipv6BlocklistAction;
 
-    rawTransportData.alertInbound = alertInbound;
-    rawTransportData.alertOutbound = alertOutbound;
+    rawTransportDataHdr.alertInbound = alertInbound;
+    rawTransportDataHdr.alertOutbound = alertOutbound;
 
-    rawTransportData.numOfIpv4Addresses = (UINT16)blocklistIpv4.size();
+    rawTransportDataHdr.numOfIpv4Addresses = (UINT16)blocklistIpv4.size();
     for (std::vector<struct in_addr>::const_iterator i = blocklistIpv4.begin(); i != blocklistIpv4.end(); i++) {
-        rawTransportData.ipv4BlackList[i - blocklistIpv4.begin()] = *i;
+        rawTransportDataHdr.ipv4BlackList[i - blocklistIpv4.begin()] = *i;
+    }
+
+    //
+    // DNS
+    //
+    rawTransportDataHdr.enableDnsBlackhole = dnsProcessing;
+    rawTransportDataHdr.dnsPlaceholderBufSize = 0;
+
+    for (const auto &t : dnsItemList) rawTransportDataHdr.dnsPlaceholderBufSize += t.size() + sizeof('\0');
+    
+    // Create the raw buffer, consists of the header and buffer
+    rawTransportBuffer = std::make_shared<std::vector<std::byte>>(sizeof(ATF_CONFIG_HDR) + rawTransportDataHdr.dnsPlaceholderBufSize);
+    std::fill(rawTransportBuffer->begin(), rawTransportBuffer->end(), std::byte{ 0 }); //zero
+
+    // Copy over header
+    std::memcpy(rawTransportBuffer->data(), (const void *)&rawTransportDataHdr, sizeof(ATF_CONFIG_HDR));
+
+    // Copy over the DNS strings, delimited by \0
+    uint16_t offset = sizeof(ATF_CONFIG_HDR);
+    for (const auto &s : dnsItemList) {
+        std::memcpy(rawTransportBuffer->data() + offset, s.c_str(), s.size() + sizeof('\0'));
+        offset += s.size() + sizeof('\0');
     }
 }
 
-std::vector<std::byte> FilterConfig::SerializeConfigBuffer(void) const
+const std::shared_ptr<std::vector<std::byte>> FilterConfig::GetSerializeConfigBuffer(void) const
 {
-    std::vector<std::byte> out(sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
-    std::memcpy(out.data(), &this->rawTransportData, sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
-    return out;
+    return rawTransportBuffer;
 }
 
 bool FilterConfig::IsIniDataInitialized(void) const
 {
-    return (rawTransportData.magic == FILTER_TRANSPORT_MAGIC && 
-        rawTransportData.size == sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA));
+    return (rawTransportDataHdr.magic == FILTER_TRANSPORT_MAGIC && 
+        rawTransportDataHdr.structHeaderSize == sizeof(ATF_CONFIG_HDR));
 }
 
 const std::string &FilterConfig::GetIniFilepath(void) const

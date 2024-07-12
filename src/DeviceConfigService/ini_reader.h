@@ -116,9 +116,16 @@ private:
     ACTION_OPTS                                 dnsBlocklistAction;
 
     //
+    // DNS Sinkhole
+    //
+    bool                                        dnsProcessing;
+    std::vector<std::string>                    dnsItemList;
+
+    //
     // Transport buffer for IOCTL
     //
-    USER_DRIVER_FILTER_TRANSPORT_DATA           rawTransportData;
+    ATF_CONFIG_HDR                              rawTransportDataHdr;
+    std::shared_ptr<std::vector<std::byte>>     rawTransportBuffer;
 
     //
     // Ini filepath
@@ -143,8 +150,17 @@ public:
         enableLayerIpv6TcpOutbound(false),
         enableLayerIcmpv4(false),
 
+        dnsProcessing(false),
+
+        alertInbound(false),
+        alertOutbound(false),
+
+        ipv4BlocklistAction(ACTION_PASS),
+        ipv6BlocklistAction(ACTION_PASS),
+        dnsBlocklistAction(ACTION_PASS),
+
         iniFilePath(iniFilePath),
-        rawTransportData({ 0 }),
+        rawTransportDataHdr({ 0 }),
         iniReader(iniFilePath)
     {
     
@@ -163,12 +179,12 @@ public:
     //
     // Returns the raw configuration data buffer
     //
-    std::vector<std::byte> SerializeConfigBuffer(void) const;
+    const std::shared_ptr<std::vector<std::byte>> GetSerializeConfigBuffer(void) const;
 
     //
     // Return the raw filter config, which will be transported to the driver
     //
-    const USER_DRIVER_FILTER_TRANSPORT_DATA &GetRawFilterData(void) const;
+    const ATF_CONFIG_HDR &GetRawFilterData(void) const;
 
     //
     // Returns the vector containing IPs retrieved from online blacklists
@@ -176,7 +192,7 @@ public:
     const std::vector<struct in_addr> &GetIpv4BlacklistOnline(void) const;
 
     //
-    // Returns whether or not the USER_DRIVER_FILTER_TRANSPORT_DATA structure is initialized
+    // Returns whether or not the ATF_CONFIG_HDR structure is initialized
     //
     bool IsIniDataInitialized(void) const;
 
@@ -193,6 +209,11 @@ private:
     // Parse the ipv4_blacklist_urls_simple object and download all IPs
     //
     ATF_ERROR parseOnlineIpBlacklists(void);
+
+    //
+    // Parse DNS sink hole config
+    //
+    ATF_ERROR parseDnsSinkholeConfig(void);
 
     //
     // Returns a vector for all keys in a given section

@@ -37,12 +37,12 @@
 //
 // Do check on the data coming in from user mode; validate
 //
-static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *data);
+static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data);
 
 //
 // Create the default config
 //
-ATF_ERROR AtfAllocDefaultConfig(const USER_DRIVER_FILTER_TRANSPORT_DATA *data, CONFIG_CTX **cfgCtx)
+ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
 {
     if (!cfgCtx) {
         return ATF_BAD_PARAMETERS;
@@ -203,13 +203,13 @@ VOID AtfFreeConfig(CONFIG_CTX *ctx)
     ATF_FREE(ctx);
 }
 
-static BOOLEAN AtfIniConfigSanityCheck(const USER_DRIVER_FILTER_TRANSPORT_DATA *data)
+static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data)
 {
     if (!data) {
         return FALSE;
     }
 
-    if (data->magic != FILTER_TRANSPORT_MAGIC || data->size != sizeof(USER_DRIVER_FILTER_TRANSPORT_DATA)) {
+    if (data->magic != FILTER_TRANSPORT_MAGIC || data->structHeaderSize != sizeof(ATF_CONFIG_HDR)) {
         ATF_ERROR(AtfIniConfigSanityCheck, ATF_CORRUPT_CONFIG);
         return FALSE;
     }
