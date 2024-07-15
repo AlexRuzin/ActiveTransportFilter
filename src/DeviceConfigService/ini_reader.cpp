@@ -165,6 +165,7 @@ ATF_ERROR FilterConfig::ParseIniFile(void)
     enableLayerIpv4TcpOutbound = iniReader.GetBoolean("wfp_layer", "enable_layer_inbound_tcp_v6", false);
     enableLayerIpv6TcpInbound = iniReader.GetBoolean("wfp_layer", "enable_layer_outbound_tcp_v4", false);
     enableLayerIpv6TcpOutbound = iniReader.GetBoolean("wfp_layer", "enable_layer_outbound_tcp_v6", false);
+    enableLayerIpv4Datagram = iniReader.GetBoolean("wfp_layer", "enable_layer_datagram_v4", false);
     enableLayerIcmpv4 = iniReader.GetBoolean("wfp_layer", "enableLayerIcmpv4", false);
 
     // Parse action switches
@@ -364,6 +365,8 @@ void FilterConfig::genIoctlStruct(void)
     rawTransportDataHdr.enableLayerIpv4TcpOutbound = enableLayerIpv4TcpOutbound;
     rawTransportDataHdr.enableLayerIpv6TcpInbound = enableLayerIpv6TcpInbound;
     rawTransportDataHdr.enableLayerIpv6TcpOutbound = enableLayerIpv6TcpOutbound;
+    rawTransportDataHdr.enableLayerIpv4Datagram = enableLayerIpv4Datagram;
+
     rawTransportDataHdr.enableLayerIcmpv4 = enableLayerIcmpv4;
 
     rawTransportDataHdr.dnsBlocklistAction = dnsBlocklistAction;

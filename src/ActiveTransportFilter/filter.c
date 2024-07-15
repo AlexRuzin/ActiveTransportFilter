@@ -512,16 +512,14 @@ static ATF_ERROR AtfFilterParsePacket(
 }
 
 //
-// Filter callback for IPv4 (TCP) 
+// Filter callback for IPv4 (TCP & datagram)
 //
-ATF_ERROR AtfFilterCallbackTcpIpv4(
+ATF_ERROR AtfFilterCallbackIpv4(
     _In_ const FWPS_INCOMING_VALUES0 *fixedValues,
     _Inout_ FWPS_CLASSIFY_OUT0 *classifyOut,
     _In_ enum _flow_direction dir
 )
 {
-    DbgBreakPoint();
-
     UNREFERENCED_PARAMETER(dir);
 
     VALIDATE_PARAMETER(fixedValues);

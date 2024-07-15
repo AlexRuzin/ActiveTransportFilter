@@ -93,6 +93,7 @@ private:
     bool                                        enableLayerIpv4TcpOutbound;
     bool                                        enableLayerIpv6TcpInbound;
     bool                                        enableLayerIpv6TcpOutbound;
+    bool                                        enableLayerIpv4Datagram;
     bool                                        enableLayerIcmpv4;
 
     //

@@ -74,6 +74,7 @@ typedef struct _atf_config_hdr {
     BOOLEAN                                                 enableLayerIpv4TcpOutbound;
     BOOLEAN                                                 enableLayerIpv6TcpInbound;
     BOOLEAN                                                 enableLayerIpv6TcpOutbound;
+    BOOLEAN                                                 enableLayerIpv4Datagram;
     BOOLEAN                                                 enableLayerIcmpv4;
 
     //

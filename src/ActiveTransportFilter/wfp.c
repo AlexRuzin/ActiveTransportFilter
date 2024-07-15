@@ -48,6 +48,19 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
 );
 
 //
+// Main callout function datagram IPv4
+//
+void NTAPI AtfClassifyFuncDatagram(
+    _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
+    _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
+    _Inout_opt_ void *layerData,
+    _In_opt_    const void *classifyContext,
+    _In_        const FWPS_FILTER3 *filter,
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
+);
+
+//
 // Main callout function (TCP v6)
 //
 void NTAPI AtfClassifyFuncTcpV6(
@@ -172,6 +185,19 @@ const CALLOUT_DESC descList[] = {
         L"ATF Filter Transport ipv6 Outbound",
 
         AtfClassifyFuncTcpV6
+    },
+
+    // Datagram v4 (bidirectional)
+    {
+        &FWPM_LAYER_DATAGRAM_DATA_V4,
+
+        L"ATF Callout UDP V4 Bidirectional",
+        L"ATF Callout Datagram ipv4 Bidirectional",
+
+        L"ATF Filter UDP V4 Bidirectional",
+        L"ATF Filter Datagram ipv4 Bidirectional",
+
+        AtfClassifyFuncDatagram
     },
 
     // ICMP Original Type
@@ -516,7 +542,7 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     UNREFERENCED_PARAMETER(filter);
     UNREFERENCED_PARAMETER(flowContext);
 
-    AtfFilterCallbackTcpIpv4(
+    AtfFilterCallbackIpv4(
         fixedValues,
         classifyOut,
         _flow_direction_inbound
@@ -540,7 +566,31 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
     UNREFERENCED_PARAMETER(filter);
     UNREFERENCED_PARAMETER(flowContext);
 
-    AtfFilterCallbackTcpIpv4(
+    AtfFilterCallbackIpv4(
+        fixedValues,
+        classifyOut,
+        _flow_direction_outbound
+    );  
+}
+
+void NTAPI AtfClassifyFuncDatagram(
+    _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
+    _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
+    _Inout_opt_ void *layerData,
+    _In_opt_    const void *classifyContext,
+    _In_        const FWPS_FILTER3 *filter,
+    _In_        UINT64 flowContext,
+    _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
+)
+{
+    UNREFERENCED_PARAMETER(fixedValues);
+    UNREFERENCED_PARAMETER(metaValues);
+    UNREFERENCED_PARAMETER(layerData);
+    UNREFERENCED_PARAMETER(classifyContext);
+    UNREFERENCED_PARAMETER(filter);
+    UNREFERENCED_PARAMETER(flowContext);
+
+    AtfFilterCallbackIpv4(
         fixedValues,
         classifyOut,
         _flow_direction_outbound

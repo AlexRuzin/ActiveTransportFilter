@@ -66,6 +66,7 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
     ADD_WFP_LAYER(data->enableLayerIpv4TcpOutbound, &FWPM_LAYER_OUTBOUND_TRANSPORT_V4);
     ADD_WFP_LAYER(data->enableLayerIpv6TcpInbound, &FWPM_LAYER_INBOUND_TRANSPORT_V6);
     ADD_WFP_LAYER(data->enableLayerIpv6TcpOutbound, &FWPM_LAYER_OUTBOUND_TRANSPORT_V6);
+    ADD_WFP_LAYER(data->enableLayerIpv4Datagram, &FWPM_LAYER_DATAGRAM_DATA_V4);
     ADD_WFP_LAYER(data->enableLayerIcmpv4, &FWPM_CONDITION_ORIGINAL_ICMP_TYPE);
 
     out->numOfIpv4Addresses                     = data->numOfIpv4Addresses;
@@ -220,6 +221,7 @@ static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data)
         data->enableLayerIpv4TcpOutbound |
         data->enableLayerIpv6TcpInbound |
         data->enableLayerIpv6TcpOutbound |
+        data->enableLayerIpv4Datagram |
         data->enableLayerIcmpv4        
         ))
     {
