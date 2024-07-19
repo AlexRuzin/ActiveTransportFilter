@@ -435,7 +435,7 @@ CONFIG_CTX *AtfFilterGetCurrentConfig(VOID)
 VOID AtfFilterFlushConfig(VOID)
 {
     if (gConfigCtx) {
-        AtfFreeConfigCtx(&gConfigCtx);
+        AtfCfgFreeCtx(&gConfigCtx);
         gConfigCtx = NULL;
     }
 }

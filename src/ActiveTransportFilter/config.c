@@ -37,12 +37,12 @@
 //
 // Do check on the data coming in from user mode; validate
 //
-static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize);
+static BOOLEAN AtfCfgSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize);
 
 //
 // Create the default config
 //
-ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, CONFIG_CTX **cfgCtx)
+ATF_ERROR AtfCfgAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, CONFIG_CTX **cfgCtx)
 {
     if (!cfgCtx || dataSize == 0) {
         return ATF_BAD_PARAMETERS;
@@ -51,7 +51,7 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, CON
 
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    if (!AtfIniConfigSanityCheck(data, dataSize)) {
+    if (!AtfCfgSanityCheck(data, dataSize)) {
         return ATF_CORRUPT_CONFIG;
     }
 
@@ -137,7 +137,7 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, CON
 //
 // Append a new blocklist array to the config
 //
-ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, SIZE_T bufLen)
+ATF_ERROR AtfCfgAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, SIZE_T bufLen)
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
@@ -189,7 +189,7 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, SIZE
     return atfError;
 }
 
-static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize)
+static BOOLEAN AtfCfgSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize)
 {
     if (!data || dataSize == 0) {
         return FALSE;
@@ -200,7 +200,7 @@ static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSi
         data->structHeaderSize != sizeof(ATF_CONFIG_HDR) ||
         dataSize != (sizeof(ATF_CONFIG_HDR) + data->dnsBufferSize)
     ) {
-        ATF_ERROR(AtfIniConfigSanityCheck, ATF_CORRUPT_CONFIG);
+        ATF_ERROR(AtfCfgSanityCheck, ATF_CORRUPT_CONFIG);
         return FALSE;
     }
 
@@ -214,33 +214,33 @@ static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSi
         data->enableLayerIcmpv4        
         ))
     {
-        ATF_DEBUG(AtfIniConfigSanityCheck, "All layers have been disabled by user, ATF will not be initialized.");
+        ATF_DEBUG(AtfCfgSanityCheck, "All layers have been disabled by user, ATF will not be initialized.");
         return FALSE;
     }
 
     if (!data->numOfIpv4Addresses) {
-        ATF_DEBUG(AtfIniConfigSanityCheck, "No ipv4 addresses found in user ini, continuing.");
+        ATF_DEBUG(AtfCfgSanityCheck, "No ipv4 addresses found in user ini, continuing.");
     } else if (data->numOfIpv4Addresses > MAX_IPV4_ADDRESSES_BLACKLIST) {
-        ATF_DEBUG(AtfIniConfigSanityCheck, "ini cannot exceed MAX_IPV4_ADDRESSES_BLACKLIST addresses");
+        ATF_DEBUG(AtfCfgSanityCheck, "ini cannot exceed MAX_IPV4_ADDRESSES_BLACKLIST addresses");
     }
 
     if (!data->numOfIpv6Addresses) {
-        ATF_DEBUG(AtfIniConfigSanityCheck, "No ipv6 addresses found in user ini, continuing.");
+        ATF_DEBUG(AtfCfgSanityCheck, "No ipv6 addresses found in user ini, continuing.");
     } else if (data->numOfIpv6Addresses > MAX_IPV6_ADDRESSES_BLACKLIST) {
-        ATF_DEBUG(AtfIniConfigSanityCheck, "ini cannot exceed MAX_IPV6_ADDRESSES_BLACKLIST addresses");
+        ATF_DEBUG(AtfCfgSanityCheck, "ini cannot exceed MAX_IPV6_ADDRESSES_BLACKLIST addresses");
     }
 
     // Check that all IPs in the blacklist are > 0.0.0.0
     for (UINT16 i = 0; i < data->numOfIpv4Addresses; i++) {
         if (data->ipv4BlackList[i].S_un.S_addr == 0x00000000) {
-            ATF_DEBUG(AtfIniConfigSanityCheck, "An ipv4 gateway address was provided. Bad config.");
+            ATF_DEBUG(AtfCfgSanityCheck, "An ipv4 gateway address was provided. Bad config.");
             return FALSE;
         }
     }
 
     for (UINT16 i = 0; i < data->numOfIpv6Addresses; i++) {
         if (!(data->ipv6Blacklist[i].a.q.qword[0] | data->ipv6Blacklist[i].a.q.qword[1])) {
-            ATF_DEBUG(AtfIniConfigSanityCheck, "An ipv6 gateway address was provided. Bad config.");
+            ATF_DEBUG(AtfCfgSanityCheck, "An ipv6 gateway address was provided. Bad config.");
             return FALSE;
         }
     }
@@ -259,7 +259,7 @@ static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSi
 //
 // Free config object
 //
-VOID AtfFreeConfigCtx(CONFIG_CTX **cfgCtx)
+VOID AtfCfgFreeCtx(CONFIG_CTX **cfgCtx)
 {
     if (!cfgCtx) {
         return;
@@ -274,6 +274,10 @@ VOID AtfFreeConfigCtx(CONFIG_CTX **cfgCtx)
 
     if (p->ipv4TrieCtx) {
         AtfIpv4TrieFree(&p->ipv4TrieCtx);
+    }
+
+    if (p->ipv6AddressPool) {
+        ATF_FREE(p->ipv6AddressPool);
     }
 
     if (p->ipv4AddressPool) {

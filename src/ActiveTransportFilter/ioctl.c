@@ -328,9 +328,9 @@ static NTSTATUS AtfHandleSendWfpConfig(
     //  This function will also validate the user input
     //
     CONFIG_CTX *configCtx = NULL;
-    ATF_ERROR atfError = AtfAllocDefaultConfig(data, dataSize, &configCtx);
+    ATF_ERROR atfError = AtfCfgAllocDefaultConfig(data, dataSize, &configCtx);
     if (atfError) {
-        ATF_ERROR(AtfAllocDefaultConfig, atfError);
+        ATF_ERROR(AtfCfgAllocDefaultConfig, atfError);
         return STATUS_BAD_DATA; 
     }
 
@@ -395,9 +395,9 @@ static NTSTATUS AtfHandlerAppendIpv4Blacklist(
         return ntStatus;
     }
 
-    ATF_ERROR atfError = AtfConfigAddIpv4Blacklist(configCtx, rawBuf, bufLen);
+    ATF_ERROR atfError = AtfCfgAddIpv4Blacklist(configCtx, rawBuf, bufLen);
     if (atfError) {
-        ATF_ERROR(AtfConfigAddIpv4Blacklist, atfError);
+        ATF_ERROR(AtfCfgAddIpv4Blacklist, atfError);
         return STATUS_DEVICE_NOT_READY;
     }
 
