@@ -37,21 +37,21 @@
 //
 // Do check on the data coming in from user mode; validate
 //
-static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data);
+static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize);
 
 //
 // Create the default config
 //
-ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
+ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, CONFIG_CTX **cfgCtx)
 {
-    if (!cfgCtx) {
+    if (!cfgCtx || dataSize == 0) {
         return ATF_BAD_PARAMETERS;
     }
     *cfgCtx = NULL;
 
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    if (!AtfIniConfigSanityCheck(data)) {
+    if (!AtfIniConfigSanityCheck(data, dataSize)) {
         return ATF_CORRUPT_CONFIG;
     }
 
@@ -90,7 +90,7 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
     }
 
     if (out->numOfIpv4Addresses) {
-        const size_t sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(struct in_addr);
+        const SIZE_T sizeOfIpv4Pool = out->numOfIpv4Addresses * sizeof(struct in_addr);
         out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv4Pool);
         if (!out) {
             ATF_FREE(out);
@@ -110,7 +110,7 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
     }
 
     if (out->numOfIpv6Addresses) {
-        const size_t sizeOfIpv6Pool = out->numOfIpv6Addresses * sizeof(IPV6_RAW_ADDRESS);
+        const SIZE_T sizeOfIpv6Pool = out->numOfIpv6Addresses * sizeof(IPV6_RAW_ADDRESS);
         out->ipv4AddressPool = (struct in_addr *)ATF_MALLOC(sizeOfIpv6Pool);
         if (!out) {
             if (out->ipv4AddressPool) {
@@ -123,6 +123,12 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
         RtlCopyMemory(out->ipv6AddressPool, data->ipv6Blacklist, sizeOfIpv6Pool);
     }
 
+    // Alloc raw dns list pool
+    if (data->dnsBufferSize > 0) {
+        out->rawDnsBuffer = ATF_MALLOC(data->dnsBufferSize);
+        RtlCopyMemory(out->rawDnsBuffer, (VOID *)((DWORD_PTR)data + data->dnsBufferSize), data->dnsBufferSize);
+    }
+
     *cfgCtx = out;
 
     return ATF_ERROR_OK;
@@ -131,11 +137,11 @@ ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx)
 //
 // Append a new blocklist array to the config
 //
-ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size_t bufLen)
+ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, SIZE_T bufLen)
 {
     ATF_ERROR atfError = ATF_ERROR_OK;
 
-    const size_t numOfIps = bufLen / sizeof(struct in_addr);
+    const SIZE_T numOfIps = bufLen / sizeof(struct in_addr);
 
     if (!ctx || !blacklist || !bufLen || bufLen % sizeof(struct in_addr)) {
         return ATF_BAD_PARAMETERS;
@@ -183,34 +189,17 @@ ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size
     return atfError;
 }
 
-VOID AtfFreeConfig(CONFIG_CTX *ctx)
+static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize)
 {
-    if (!ctx) {
-        return;
-    }
-
-    // Free the trie
-    AtfIpv4TrieFree(&ctx->ipv4TrieCtx);
-    
-    // Free IP pools
-    if (ctx->ipv4AddressPool) {
-        ATF_FREE(ctx->ipv4AddressPool);
-    }
-
-    if (ctx->ipv4AddressPool) {
-        ATF_FREE(ctx->ipv6AddressPool);
-    }
-
-    ATF_FREE(ctx);
-}
-
-static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data)
-{
-    if (!data) {
+    if (!data || dataSize == 0) {
         return FALSE;
     }
 
-    if (data->magic != FILTER_TRANSPORT_MAGIC || data->structHeaderSize != sizeof(ATF_CONFIG_HDR)) {
+    // Size checks
+    if (data->magic != FILTER_TRANSPORT_MAGIC || 
+        data->structHeaderSize != sizeof(ATF_CONFIG_HDR) ||
+        dataSize != (sizeof(ATF_CONFIG_HDR) + data->dnsBufferSize)
+    ) {
         ATF_ERROR(AtfIniConfigSanityCheck, ATF_CORRUPT_CONFIG);
         return FALSE;
     }
@@ -256,5 +245,45 @@ static BOOLEAN AtfIniConfigSanityCheck(const ATF_CONFIG_HDR *data)
         }
     }
 
+    // Check buffer sanity (TODO)
+    {
+        const char *p = (char *)((DWORD_PTR)data + sizeof(data));
+        if (*p == '\0') {
+            return FALSE;
+        }
+    }
+
     return TRUE;
 }
+
+//
+// Free config object
+//
+VOID AtfFreeConfigCtx(CONFIG_CTX **cfgCtx)
+{
+    if (!cfgCtx) {
+        return;
+    }
+
+    CONFIG_CTX *p = *cfgCtx;
+
+    if (p->rawDnsBuffer && p->rawDnsBufferSize > 0) {
+        RtlZeroMemory(p->rawDnsBuffer, p->rawDnsBufferSize);
+        ATF_FREE(p->rawDnsBuffer);
+    }
+
+    if (p->ipv4TrieCtx) {
+        AtfIpv4TrieFree(&p->ipv4TrieCtx);
+    }
+
+    if (p->ipv4AddressPool) {
+        RtlZeroMemory(p->ipv4AddressPool, sizeof(struct in_addr) * p->numOfIpv4Addresses);
+        ATF_FREE(p->ipv4AddressPool);
+    }
+
+    RtlZeroMemory(p, sizeof(CONFIG_CTX));
+    ATF_FREE(p);
+    *cfgCtx = NULL;
+}
+
+// eof

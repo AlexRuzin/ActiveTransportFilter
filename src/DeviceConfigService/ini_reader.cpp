@@ -385,12 +385,12 @@ void FilterConfig::genIoctlStruct(void)
     // DNS
     //
     rawTransportDataHdr.enableDnsBlackhole = dnsProcessing;
-    rawTransportDataHdr.dnsPlaceholderBufSize = 0;
+    rawTransportDataHdr.dnsBufferSize = 0;
 
-    for (const auto &t : dnsItemList) rawTransportDataHdr.dnsPlaceholderBufSize += t.size() + sizeof('\0');
+    for (const auto &t : dnsItemList) rawTransportDataHdr.dnsBufferSize += t.size() + sizeof('\0');
     
     // Create the raw buffer, consists of the header and buffer
-    rawTransportBuffer = std::make_shared<std::vector<std::byte>>(sizeof(ATF_CONFIG_HDR) + rawTransportDataHdr.dnsPlaceholderBufSize);
+    rawTransportBuffer = std::make_shared<std::vector<std::byte>>(sizeof(ATF_CONFIG_HDR) + rawTransportDataHdr.dnsBufferSize);
     std::fill(rawTransportBuffer->begin(), rawTransportBuffer->end(), std::byte{ 0 }); //zero
 
     // Copy over header

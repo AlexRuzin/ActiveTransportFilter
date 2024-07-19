@@ -106,8 +106,8 @@ typedef struct _atf_config_hdr {
     UINT16                                                  numOfIpv4Addresses;
     struct in_addr                                          ipv4BlackList[MAX_IPV6_ADDRESSES_BLACKLIST];
 
-    // Placeholder for DNS buffer
-    UINT16                                                  dnsPlaceholderBufSize;
+    // DNS raw buffer size
+    UINT16                                                  dnsBufferSize;
 
     //
     // DNS header follows at offset + sizeof(struct _atf_config_hdr)

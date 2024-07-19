@@ -33,16 +33,17 @@ typedef struct _enabled_layer {
 //  A pointer to this object is returned by AtfAllocDefaultConfig, when the usermode supplies
 //  a ATF_CONFIG_HDR structure through IOCTL.
 // 
+// Use AtfFreeConfigCtx() to free this structure
 //
 typedef struct _config_ctx {
     BOOLEAN                         isValidConfig; //placeholder
 
     // List of WFP callouts to register, as configured by the user
-    size_t                          numOfLayers;
+    SIZE_T                          numOfLayers;
     ENABLED_LAYER                   enabledLayers[MAX_CALLOUT_LAYER_DATA];
 
     // A n-length pool, aligned by 32-bits, representing all known IPv4 addresses
-    size_t                          numOfIpv4Addresses;
+    SIZE_T                          numOfIpv4Addresses;
     struct in_addr                  *ipv4AddressPool;
 
     //
@@ -51,7 +52,7 @@ typedef struct _config_ctx {
     IPV4_TRIE_CTX                   *ipv4TrieCtx;
 
     // IPv6 blacklist pool
-    size_t                          numOfIpv6Addresses;
+    SIZE_T                          numOfIpv6Addresses;
     IPV6_RAW_ADDRESS                *ipv6AddressPool;
 
     //
@@ -66,19 +67,26 @@ typedef struct _config_ctx {
     //
     BOOLEAN                         alertInbound;
     BOOLEAN                         alertOutbound;
+
+    //
+    // Raw buffer containing DNS buffer from IOCTL
+    //  Use AtfFreeConfigCtx() to free
+    // 
+    VOID                            *rawDnsBuffer;
+    SIZE_T                          rawDnsBufferSize;
 } CONFIG_CTX, *PCONFIG_CTX;
 
 //
 // Initialize the default configuration
 //
-ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, CONFIG_CTX **cfgCtx);
+ATF_ERROR AtfAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, CONFIG_CTX **cfgCtx);
 
 //
 // Append a new blocklist array to the config
 //
-ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, size_t bufLen);
+ATF_ERROR AtfConfigAddIpv4Blacklist(CONFIG_CTX *ctx, const VOID *blacklist, SIZE_T bufLen);
 
 //
 // Free the config context structure
 //
-VOID AtfFreeConfig(CONFIG_CTX *ctx);
+VOID AtfFreeConfigCtx(CONFIG_CTX **cfgCtx);

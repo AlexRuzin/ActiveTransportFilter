@@ -121,8 +121,6 @@ VOID AtfIoDeviceControl(
     //
     KeWaitForSingleObject(&gIoctlLock, Executive, KernelMode, FALSE, NULL);
 
-    //DbgBreakPoint();
-
     NTSTATUS ntStatus = STATUS_SUCCESS;
 
     WDFDEVICE wdfDevice = WdfIoQueueGetDevice(queue);
@@ -292,6 +290,7 @@ static NTSTATUS AtfHandleSendWfpConfig(
 )
 {
     NTSTATUS ntStatus = STATUS_SUCCESS;
+    DbgBreakPoint();
 
     if (IsWfpRunning()) {
         // WFP cannot be running when sending the config
@@ -308,15 +307,20 @@ static NTSTATUS AtfHandleSendWfpConfig(
     }
 
     ATF_CONFIG_HDR *data = NULL;
+    size_t dataSize = 0;
 
     ntStatus = WdfRequestRetrieveInputBuffer(
         request,
         sizeof(struct _atf_config_hdr),
         (PVOID *)&data,
-        NULL
+        &dataSize
     );
     if (!NT_SUCCESS(ntStatus)) {
         return ntStatus;
+    }
+
+    if (!data || dataSize == 0) {
+        return STATUS_BAD_DATA; 
     }
 
     //
@@ -324,7 +328,7 @@ static NTSTATUS AtfHandleSendWfpConfig(
     //  This function will also validate the user input
     //
     CONFIG_CTX *configCtx = NULL;
-    ATF_ERROR atfError = AtfAllocDefaultConfig(data, &configCtx);
+    ATF_ERROR atfError = AtfAllocDefaultConfig(data, dataSize, &configCtx);
     if (atfError) {
         ATF_ERROR(AtfAllocDefaultConfig, atfError);
         return STATUS_BAD_DATA; 

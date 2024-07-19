@@ -435,7 +435,7 @@ CONFIG_CTX *AtfFilterGetCurrentConfig(VOID)
 VOID AtfFilterFlushConfig(VOID)
 {
     if (gConfigCtx) {
-        AtfFreeConfig(gConfigCtx);
+        AtfFreeConfigCtx(&gConfigCtx);
         gConfigCtx = NULL;
     }
 }
@@ -483,7 +483,7 @@ BOOLEAN AtfFilterIsLayerEnabled(const GUID *guid)
 //
 // Source and dest IPs depend on the direction
 //
-static ATF_ERROR AtfFilterParsePacket(
+static ATF_ERROR AtfFilterParsePacketIPHeader(
     _In_ const FWPS_INCOMING_VALUES0 *fixedValues,
     _Out_ ATF_FLT_DATA *dataOut
 )
@@ -512,6 +512,24 @@ static ATF_ERROR AtfFilterParsePacket(
 }
 
 //
+// Generic packet filter
+//
+static ATF_ERROR AtfFilterParsePacket(
+    _In_ const FWPS_INCOMING_VALUES0 *fixedValues
+)
+{
+    if (!fixedValues) {
+        return ATF_BAD_PARAMETERS;
+    }
+
+
+
+
+
+    return ATF_FILTER_SIGNAL_PASS;
+}
+
+//
 // Filter callback for IPv4 (TCP & datagram)
 //
 ATF_ERROR AtfFilterCallbackIpv4(
@@ -527,7 +545,7 @@ ATF_ERROR AtfFilterCallbackIpv4(
 
     // Parse packet
     ATF_FLT_DATA data;
-    if (AtfFilterParsePacket(fixedValues, &data) != ATF_ERROR_OK) {
+    if (AtfFilterParsePacketIPHeader(fixedValues, &data) != ATF_ERROR_OK) {
         // Error in parsing data. This should never happen as the packet comes from WFP, but still, handle it.
         return ATF_ERROR_OK;
     }
@@ -585,6 +603,11 @@ ATF_ERROR AtfFilterCallbackIpv4(
         );
     }
 #endif //ATF_MAIN_EVENT_OUTPUT
+
+    // Deep packet inspection
+    if (atfError == ATF_FILTER_SIGNAL_PASS) {
+        atfError = AtfFilterParsePacket(fixedValues);
+    }
 
     // Do ops
     switch(atfError)

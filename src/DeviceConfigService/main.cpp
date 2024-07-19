@@ -38,6 +38,10 @@ int CALLBACK WinMain(
     _In_ int nShowCmd
 )
 {
+    //Sleep(8000);
+
+
+
     LOG_INIT(CONTROL_SERVICE_NAME, LOG_SOURCE_WINDOWS_DEBUG);
     LOG_INFO("Starting configuration service %s", CONTROL_SERVICE_NAME);
 
