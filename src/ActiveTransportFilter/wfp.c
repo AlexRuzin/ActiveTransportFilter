@@ -24,11 +24,11 @@
 //
 // Main callout functions (TCP ipv4 inbound)
 //
-void NTAPI AtfClassifyFuncTcpV4Inbound(
+VOID NTAPI AtfClassifyFuncTcpV4Inbound(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -37,11 +37,11 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
 //
 // Main callout functions (TCP ipv4 outbound)
 //
-void NTAPI AtfClassifyFuncTcpV4Outbound(
+VOID NTAPI AtfClassifyFuncTcpV4Outbound(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -50,11 +50,11 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
 //
 // Main callout function datagram IPv4
 //
-void NTAPI AtfClassifyFuncDatagram(
+VOID NTAPI AtfClassifyFuncDatagram(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -63,11 +63,11 @@ void NTAPI AtfClassifyFuncDatagram(
 //
 // Main callout function (TCP v6)
 //
-void NTAPI AtfClassifyFuncTcpV6(
+VOID NTAPI AtfClassifyFuncTcpV6(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -76,11 +76,11 @@ void NTAPI AtfClassifyFuncTcpV6(
 // 
 // Main callout function (ICMP)
 //
-void NTAPI AtfClassifyFuncIcmp(
+VOID NTAPI AtfClassifyFuncIcmp(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -98,7 +98,7 @@ NTSTATUS NTAPI AtfNotifyFunctionHandler(
 // 
 // Notify flow callback
 //
-void NTAPI AtfFlowDeleteFunctionHandler(
+VOID NTAPI AtfFlowDeleteFunctionHandler(
     _In_ UINT16 layerId,
     _In_ UINT32 calloutId,
     _In_ UINT64 flowContext
@@ -525,11 +525,11 @@ BOOLEAN IsWfpRunning(VOID)
 //
 // Calls directly into the filter engine (AtfFilterCallbackTcpIpv4Inbound/AtfFilterCallbackTcpIpv4Inbound)
 //
-void NTAPI AtfClassifyFuncTcpV4Inbound(
+VOID NTAPI AtfClassifyFuncTcpV4Inbound(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -549,11 +549,11 @@ void NTAPI AtfClassifyFuncTcpV4Inbound(
     );
 }
 
-void NTAPI AtfClassifyFuncTcpV4Outbound(
+VOID NTAPI AtfClassifyFuncTcpV4Outbound(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -573,11 +573,11 @@ void NTAPI AtfClassifyFuncTcpV4Outbound(
     );  
 }
 
-void NTAPI AtfClassifyFuncDatagram(
+VOID NTAPI AtfClassifyFuncDatagram(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -597,11 +597,11 @@ void NTAPI AtfClassifyFuncDatagram(
     );  
 }
 
-void NTAPI AtfClassifyFuncTcpV6(
+VOID NTAPI AtfClassifyFuncTcpV6(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -621,11 +621,11 @@ void NTAPI AtfClassifyFuncTcpV6(
     return;
 }
 
-void NTAPI AtfClassifyFuncIcmp(
+VOID NTAPI AtfClassifyFuncIcmp(
     _In_        const FWPS_INCOMING_VALUES0 *fixedValues,
     _In_        const FWPS_INCOMING_METADATA_VALUES0 *metaValues,
-    _Inout_opt_ void *layerData,
-    _In_opt_    const void *classifyContext,
+    _Inout_opt_ VOID *layerData,
+    _In_opt_    const VOID *classifyContext,
     _In_        const FWPS_FILTER3 *filter,
     _In_        UINT64 flowContext,
     _Inout_     FWPS_CLASSIFY_OUT0 *classifyOut
@@ -676,7 +676,7 @@ NTSTATUS NTAPI AtfNotifyFunctionHandler(
     return STATUS_SUCCESS;
 }
 
-void NTAPI AtfFlowDeleteFunctionHandler(
+VOID NTAPI AtfFlowDeleteFunctionHandler(
     _In_ UINT16 layerId,
     _In_ UINT32 calloutId,
     _In_ UINT64 flowContext

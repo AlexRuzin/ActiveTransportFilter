@@ -63,6 +63,14 @@ static NTSTATUS AtfHandlerAppendIpv4Blacklist(
 );
 
 //
+// Handler to append blacklist domain strings
+//
+static NTSTATUS AtfHandlerAppendDomainStrings(
+    _In_ WDFREQUEST request, 
+    _In_ size_t bufLen
+);
+
+//
 // Lock that handles synchronization between IOCTL calls
 //
 KMUTEX gIoctlLock;
@@ -174,6 +182,16 @@ VOID AtfIoDeviceControl(
             );
         }
         break;
+
+    case IOCTL_ATF_SEND_DOMAIN_BLACKLIST_ADDON:
+        {
+            ntStatus = AtfHandlerAppendDomainStrings(
+                request,
+                inputBufferLength
+            );
+        }
+        break;
+
     default:
         ntStatus = STATUS_INVALID_DEVICE_REQUEST;
         break;
@@ -400,6 +418,21 @@ static NTSTATUS AtfHandlerAppendIpv4Blacklist(
         ATF_ERROR(AtfCfgAddIpv4Blacklist, atfError);
         return STATUS_DEVICE_NOT_READY;
     }
+
+    return ntStatus;
+}
+
+static NTSTATUS AtfHandlerAppendDomainStrings(
+    _In_ WDFREQUEST request, 
+    _In_ size_t bufLen
+)
+{
+    NTSTATUS ntStatus = STATUS_SUCCESS;
+
+    if (!bufLen || !request) {
+        return STATUS_NO_DATA_DETECTED;
+    }
+
 
     return ntStatus;
 }

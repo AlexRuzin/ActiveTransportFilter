@@ -16,6 +16,7 @@
 #include <ntddk.h>
 #include <fwpsk.h>
 #include <fwpmk.h>
+#include <string.h>
 
 #include "config.h"
 
@@ -38,6 +39,11 @@
 // Do check on the data coming in from user mode; validate
 //
 static BOOLEAN AtfCfgSanityCheck(const ATF_CONFIG_HDR *data, SIZE_T dataSize);
+
+//
+// DNS pool sanity check
+//
+static BOOLEAN AtfCfgValidateDnsPool(const VOID *pool, SIZE_T poolSize);
 
 //
 // Create the default config
@@ -124,14 +130,66 @@ ATF_ERROR AtfCfgAllocDefaultConfig(const ATF_CONFIG_HDR *data, SIZE_T dataSize, 
     }
 
     // Alloc raw dns list pool
-    if (data->dnsBufferSize > 0) {
+    const VOID *dnsPoolPtr = (VOID *)((DWORD_PTR)data + data->dnsBufferSize);
+    if (data->dnsBufferSize > 0 && AtfCfgValidateDnsPool(dnsPoolPtr, data->dnsBufferSize)) {
         out->rawDnsBuffer = ATF_MALLOC(data->dnsBufferSize);
         RtlCopyMemory(out->rawDnsBuffer, (VOID *)((DWORD_PTR)data + data->dnsBufferSize), data->dnsBufferSize);
+        out->rawDnsBufferSize = data->dnsBufferSize;
     }
 
     *cfgCtx = out;
 
     return ATF_ERROR_OK;
+}
+
+static BOOLEAN AtfCfgCheckValidTld(const LPSTR str, __out_opt SIZE_T *outSize)
+{
+    if (!str) {
+        return FALSE;
+    }
+
+    static const SIZE_T maxDomainSize = 0xff - 1;
+
+    SIZE_T len = 0;
+    RtlStringCchLengthA(str, maxDomainSize, &len);
+    if (len >= maxDomainSize) {
+        return FALSE;
+    }
+
+    if (!strstr(str, ".")) {
+        return FALSE;
+    }
+
+    if (outSize) {
+        *outSize = len;
+    }
+
+    return TRUE;
+}
+
+//
+// Validates DNS pool
+//
+static BOOLEAN AtfCfgValidateDnsPool(const VOID *pool, SIZE_T poolSize) 
+{
+    if (!pool || poolSize == 0) {
+        return FALSE;
+    }
+
+    CHAR *ptr = (CHAR *)pool;
+    const CHAR *maxPtr = (const CHAR *)((DWORD_PTR)pool + poolSize);
+
+    while (ptr < maxPtr) {
+        SIZE_T domainSize = 0;
+
+        if (!AtfCfgCheckValidTld(ptr, &domainSize)) {
+            return FALSE;
+        }
+
+        ptr += domainSize;
+    }
+
+    return TRUE;
 }
 
 //
