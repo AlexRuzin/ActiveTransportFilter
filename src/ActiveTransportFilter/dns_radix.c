@@ -6,6 +6,7 @@
 #include "../common/errors.h"
 
 #include "mem.h"
+#include "crc.h"
 
 #include "dns_radix.h"
 
