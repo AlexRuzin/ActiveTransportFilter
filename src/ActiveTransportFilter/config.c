@@ -22,6 +22,8 @@
 
 #include "trace.h"
 #include "mem.h"
+#include "ipv4_trie.h"
+#include "dns_radix.h"
 #include "../common/errors.h"
 #include "../common/user_driver_transport.h"
 
