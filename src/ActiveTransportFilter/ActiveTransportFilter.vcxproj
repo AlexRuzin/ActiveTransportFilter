@@ -97,6 +97,8 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="config.c" />
+    <ClCompile Include="crc.c" />
+    <ClCompile Include="dns_radix.c" />
     <ClCompile Include="filter.c" />
     <ClCompile Include="ioctl.c" />
     <ClCompile Include="ipv4_trie.c" />
@@ -112,6 +114,8 @@ copy $(SolutionDir)..\build\$(Platform)\$(ConfigurationName)\_driver\$(TargetNam
     <ClInclude Include="..\common\user_driver_transport.h" />
     <ClInclude Include="..\common\user_logging.h" />
     <ClInclude Include="config.h" />
+    <ClInclude Include="crc.h" />
+    <ClInclude Include="dns_radix.h" />
     <ClInclude Include="filter.h" />
     <ClInclude Include="ioctl.h" />
     <ClInclude Include="ipv4_trie.h" />

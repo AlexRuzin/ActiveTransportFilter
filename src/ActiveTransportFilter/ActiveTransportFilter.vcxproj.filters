@@ -48,6 +48,12 @@
     <ClCompile Include="ipv4_trie.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="dns_radix.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="crc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="trace.h">
@@ -90,6 +96,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ipv4_trie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dns_radix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="crc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
